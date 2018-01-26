@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy xmlns="http://ws.apache.org/ns/synapse"
+       name="msazurestorage"
+       transports="http https"
+       startOnLoad="true">
+    <description/>
+    <target>
+        <inSequence onError="faultHandlerSeq">
+            <property name="accountName" expression="json-eval($.accountName)"/>
+            <property name="accountKey" expression="json-eval($.accountKey)"/>
+            <property name="containerName" expression="json-eval($.containerName)"/>
+            <property name="filePath" expression="json-eval($.filePath)"/>
+            <property name="fileName" expression="json-eval($.fileName)"/>
+            <property name="action" expression="get-property('transport','Action')"/>
+            <msazurestorage.init>
+                <accountName>{$ctx:accountName}</accountName>
+                <accountKey>{$ctx:accountKey}</accountKey>
+            </msazurestorage.init>
+            <switch source="get-property('action')">
+                <case regex="urn:listBlobs">
+                    <msazurestorage.listBlobs>
+                        <containerName>{$ctx:containerName}</containerName>
+                    </msazurestorage.listBlobs>
+                </case>
+                <case regex="urn:uploadBlob">
+                    <msazurestorage.uploadBlob>
+                        <containerName>{$ctx:containerName}</containerName>
+                        <fileName>{$ctx:fileName}</fileName>
+                        <filePath>{$ctx:filePath}</filePath>
+                    </msazurestorage.uploadBlob>
+                </case>
+                <case regex="urn:deleteBlob">
+                    <msazurestorage.deleteBlob>
+                        <containerName>{$ctx:containerName}</containerName>
+                        <fileName>{$ctx:fileName}</fileName>
+                    </msazurestorage.deleteBlob>
+                </case>
+                <case regex="urn:listContainers">
+                    <msazurestorage.listContainers/>
+                </case>
+                <case regex="urn:createContainer">
+                    <msazurestorage.createContainer>
+                        <containerName>{$ctx:containerName}</containerName>
+                    </msazurestorage.createContainer>
+                </case>
+                <case regex="urn:deleteContainer">
+                    <msazurestorage.deleteContainer>
+                        <containerName>{$ctx:containerName}</containerName>
+                    </msazurestorage.deleteContainer>
+                </case>
+            </switch>
+            <respond/>
+        </inSequence>
+        <outSequence>
+            <log/>
+            <send/>
+        </outSequence>
+    </target>
+</proxy>
