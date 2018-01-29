@@ -23,6 +23,6 @@
         <property name="containerName" expression="$func:containerName"/>
         <property name="filePath" expression="$func:filePath"/>
         <property name="fileName" expression="$func:fileName"/>
-        <class name="org.wso2.carbon.connector.UploadBlob"/>
+        <class name="org.wso2.carbon.connector.BlobUploader"/>
     </sequence>
 </template>

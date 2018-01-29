@@ -21,7 +21,7 @@ import org.apache.axiom.om.OMElement;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.util.AzureConstants;
-import org.wso2.carbon.connector.util.ResultPayloadCreate;
+import org.wso2.carbon.connector.util.ResultPayloadCreator;
 
 import javax.xml.stream.XMLStreamException;
 import java.net.URISyntaxException;
@@ -33,25 +33,26 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 
 /**
- * This class for performing delete container operation.
+ * This class for performing create container operation.
  */
-public class DeleteContainer extends AbstractConnector {
+public class ContainerCreator extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
         String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
         String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
         String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
+
         boolean resultStatus = false;
         String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
                 + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
         CloudStorageAccount account;
-        CloudBlobClient serviceClient;
+        CloudBlobClient blobClient;
         CloudBlobContainer container;
         try {
             account = CloudStorageAccount.parse(storageConnectionString);
-            serviceClient = account.createCloudBlobClient();
-            container = serviceClient.getContainerReference(containerName);
-            resultStatus = container.deleteIfExists();
+            blobClient = account.createCloudBlobClient();
+            container = blobClient.getContainerReference(containerName);
+            resultStatus = container.createIfNotExists();
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
@@ -59,18 +60,18 @@ public class DeleteContainer extends AbstractConnector {
         } catch (StorageException e) {
             handleException("Error occurred while connecting to the storage.", e, messageContext);
         }
-        ResultPayloadCreate resultPayload = new ResultPayloadCreate();
+        ResultPayloadCreator resultPayload = new ResultPayloadCreator();
         generateResults(messageContext, resultStatus, resultPayload);
     }
 
     /**
-     * Generate the result
+     * Generate the result.
      *
-     * @param messageContext The message context that is processed by a handler in the handle method
-     * @param resultStatus   Result of the status (true/false)
+     * @param messageContext The message context that is processed by a handler in the handle method.
+     * @param resultStatus   Result of the status (true/false).
      */
     private void generateResults(MessageContext messageContext, boolean resultStatus,
-                                 ResultPayloadCreate resultPayload) {
+                                 ResultPayloadCreator resultPayload) {
         String response = AzureConstants.START_TAG + resultStatus + AzureConstants.END_TAG;
         OMElement element = null;
         try {

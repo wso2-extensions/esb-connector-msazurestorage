@@ -29,7 +29,7 @@ import java.util.Iterator;
 /**
  * This class for creating the payload.
  */
-public class ResultPayloadCreate {
+public class ResultPayloadCreator {
 
     /**
      * Prepare payload.
