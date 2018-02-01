@@ -15,43 +15,62 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.wso2.carbon.connector;
+package org.wso2.carbon.connector.azure.storage;
 
+import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.OMFactory;
+import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
-import org.wso2.carbon.connector.util.AzureConstants;
-import org.wso2.carbon.connector.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 
-import javax.xml.stream.XMLStreamException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.ListBlobItem;
 
 /**
- * This class for performing delete container operation.
+ * This class for performing list blobs operation.
  */
-public class ContainerEraser extends AbstractConnector {
+public class BlobsRetriever extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty
+                (AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.
+                CONTAINER_NAME) == null) {
+            handleException("Mandatory parameters cannot be empty.", messageContext);
+        }
+
         String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
         String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
         String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
-        boolean resultStatus = false;
+
+        String outputResult;
         String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
                 + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
-        CloudStorageAccount account;
-        CloudBlobClient serviceClient;
-        CloudBlobContainer container;
+        OMFactory factory = OMAbstractFactory.getOMFactory();
+        OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
+        OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
+        ResultPayloadCreator.preparePayload(messageContext, result);
         try {
-            account = CloudStorageAccount.parse(storageConnectionString);
-            serviceClient = account.createCloudBlobClient();
-            container = serviceClient.getContainerReference(containerName);
-            resultStatus = container.deleteIfExists();
+            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
+            CloudBlobClient serviceClient = account.createCloudBlobClient();
+            CloudBlobContainer container = serviceClient.getContainerReference(containerName);
+            for (ListBlobItem blob : container.listBlobs()) {
+                if (blob instanceof CloudBlob) {
+                    outputResult = blob.getUri().toString();
+                    OMElement messageElement = factory.createOMElement(AzureConstants.BLOB, ns);
+                    messageElement.setText(outputResult);
+                    result.addChild(messageElement);
+                }
+            }
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
@@ -59,25 +78,6 @@ public class ContainerEraser extends AbstractConnector {
         } catch (StorageException e) {
             handleException("Error occurred while connecting to the storage.", e, messageContext);
         }
-        ResultPayloadCreator resultPayload = new ResultPayloadCreator();
-        generateResults(messageContext, resultStatus, resultPayload);
-    }
-
-    /**
-     * Generate the result
-     *
-     * @param messageContext The message context that is processed by a handler in the handle method
-     * @param resultStatus   Result of the status (true/false)
-     */
-    private void generateResults(MessageContext messageContext, boolean resultStatus,
-                                 ResultPayloadCreator resultPayload) {
-        String response = AzureConstants.START_TAG + resultStatus + AzureConstants.END_TAG;
-        OMElement element = null;
-        try {
-            element = resultPayload.performSearchMessages(response);
-        } catch (XMLStreamException e) {
-            handleException("Unable to build the message.", e, messageContext);
-        }
-        resultPayload.preparePayload(messageContext, element);
+        messageContext.getEnvelope().getBody().addChild(result);
     }
 }

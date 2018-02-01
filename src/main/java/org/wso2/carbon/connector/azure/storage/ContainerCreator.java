@@ -15,13 +15,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.wso2.carbon.connector;
+package org.wso2.carbon.connector.azure.storage;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
-import org.wso2.carbon.connector.util.AzureConstants;
-import org.wso2.carbon.connector.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 
 import javax.xml.stream.XMLStreamException;
 import java.net.URISyntaxException;
@@ -38,6 +38,12 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 public class ContainerCreator extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty
+                (AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.
+                CONTAINER_NAME) == null) {
+            handleException("Mandatory parameters cannot be empty.", messageContext);
+        }
+
         String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
         String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
         String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
@@ -45,13 +51,10 @@ public class ContainerCreator extends AbstractConnector {
         boolean resultStatus = false;
         String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
                 + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
-        CloudStorageAccount account;
-        CloudBlobClient blobClient;
-        CloudBlobContainer container;
         try {
-            account = CloudStorageAccount.parse(storageConnectionString);
-            blobClient = account.createCloudBlobClient();
-            container = blobClient.getContainerReference(containerName);
+            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
+            CloudBlobClient blobClient = account.createCloudBlobClient();
+            CloudBlobContainer container = blobClient.getContainerReference(containerName);
             resultStatus = container.createIfNotExists();
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
@@ -60,8 +63,7 @@ public class ContainerCreator extends AbstractConnector {
         } catch (StorageException e) {
             handleException("Error occurred while connecting to the storage.", e, messageContext);
         }
-        ResultPayloadCreator resultPayload = new ResultPayloadCreator();
-        generateResults(messageContext, resultStatus, resultPayload);
+        generateResults(messageContext, resultStatus);
     }
 
     /**
@@ -70,15 +72,14 @@ public class ContainerCreator extends AbstractConnector {
      * @param messageContext The message context that is processed by a handler in the handle method.
      * @param resultStatus   Result of the status (true/false).
      */
-    private void generateResults(MessageContext messageContext, boolean resultStatus,
-                                 ResultPayloadCreator resultPayload) {
+    private void generateResults(MessageContext messageContext, boolean resultStatus) {
         String response = AzureConstants.START_TAG + resultStatus + AzureConstants.END_TAG;
         OMElement element = null;
         try {
-            element = resultPayload.performSearchMessages(response);
+            element = ResultPayloadCreator.performSearchMessages(response);
         } catch (XMLStreamException e) {
             handleException("Unable to build the message.", e, messageContext);
         }
-        resultPayload.preparePayload(messageContext, element);
+        ResultPayloadCreator.preparePayload(messageContext, element);
     }
 }

@@ -17,6 +17,6 @@
 -->
 <template xmlns="http://ws.apache.org/ns/synapse" name="listContainers">
     <sequence>
-        <class name="org.wso2.carbon.connector.ContainersRetriever"/>
+        <class name="org.wso2.carbon.connector.azure.storage.ContainersRetriever"/>
     </sequence>
 </template>

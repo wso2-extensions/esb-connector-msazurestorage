@@ -15,13 +15,13 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.wso2.carbon.connector;
+package org.wso2.carbon.connector.azure.storage;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
-import org.wso2.carbon.connector.util.AzureConstants;
-import org.wso2.carbon.connector.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -42,6 +42,13 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 public class BlobUploader extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty(
+                AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.CONTAINER_NAME) == null
+                || messageContext.getProperty(AzureConstants.FILE_NAME) == null || messageContext.getProperty
+                (AzureConstants.FILE_PATH) == null){
+            handleException("Mandatory parameters cannot be empty.", messageContext);
+        }
+
         String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
         String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
         String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
@@ -51,17 +58,15 @@ public class BlobUploader extends AbstractConnector {
         boolean resultStatus = false;
         String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
                 + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
-        CloudStorageAccount account;
-        CloudBlobClient serviceClient;
-        CloudBlobContainer container;
-        CloudBlockBlob blob;
+        FileInputStream fileInputStream = null;
         try {
-            account = CloudStorageAccount.parse(storageConnectionString);
-            serviceClient = account.createCloudBlobClient();
-            container = serviceClient.getContainerReference(containerName);
-            blob = container.getBlockBlobReference(fileName);
+            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
+            CloudBlobClient serviceClient = account.createCloudBlobClient();
+            CloudBlobContainer container = serviceClient.getContainerReference(containerName);
+            CloudBlockBlob blob = container.getBlockBlobReference(fileName);
             File sourceFile = new File(filePath);
-            blob.upload(new FileInputStream(sourceFile), sourceFile.length());
+            fileInputStream = new FileInputStream(sourceFile);
+            blob.upload(fileInputStream, sourceFile.length());
             resultStatus = true;
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
@@ -72,8 +77,16 @@ public class BlobUploader extends AbstractConnector {
         } catch (IOException e) {
             handleException("Error occurred while uploading the file.", e, messageContext);
         }
-        ResultPayloadCreator resultPayload = new ResultPayloadCreator();
-        generateResults(messageContext, resultStatus, resultPayload);
+        finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    log.error("Error occurred while closing the file input stream.");
+                }
+            }
+        }
+        generateResults(messageContext, resultStatus);
     }
 
     /**
@@ -82,15 +95,14 @@ public class BlobUploader extends AbstractConnector {
      * @param messageContext The message context that is processed by a handler in the handle method
      * @param resultStatus   Result of the status (true/false)
      */
-    private void generateResults(MessageContext messageContext, boolean resultStatus,
-                                 ResultPayloadCreator resultPayload) {
+    private void generateResults(MessageContext messageContext, boolean resultStatus) {
         String response = AzureConstants.START_TAG + resultStatus + AzureConstants.END_TAG;
         OMElement element = null;
         try {
-            element = resultPayload.performSearchMessages(response);
+            element = ResultPayloadCreator.performSearchMessages(response);
         } catch (XMLStreamException e) {
             handleException("Unable to build the message.", e, messageContext);
         }
-        resultPayload.preparePayload(messageContext, element);
+        ResultPayloadCreator.preparePayload(messageContext, element);
     }
 }

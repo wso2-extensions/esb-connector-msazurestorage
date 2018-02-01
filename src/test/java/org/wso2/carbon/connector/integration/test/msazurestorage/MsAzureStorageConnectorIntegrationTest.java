@@ -23,9 +23,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.connector.integration.test.base.ConnectorIntegrationTestBase;
 import org.wso2.connector.integration.test.base.RestResponse;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
 
 import java.io.File;
 import java.util.HashMap;
@@ -37,7 +34,6 @@ import java.util.Map;
 public class MsAzureStorageConnectorIntegrationTest extends ConnectorIntegrationTestBase {
 
     private Map<String, String> eiRequestHeadersMap = new HashMap<String, String>();
-    private String storageConnectionString;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -45,9 +41,6 @@ public class MsAzureStorageConnectorIntegrationTest extends ConnectorIntegration
         String connectorName = System.getProperty("connector_name") + "-connector-" +
                 System.getProperty("connector_version") + ".zip";
         init(connectorName);
-        storageConnectionString = "DefaultEndpointsProtocol=http;AccountName="
-                + connectorProperties.getProperty("accountName") + ";"
-                + "AccountKey=" + connectorProperties.getProperty("accountKey");
         eiRequestHeadersMap.put("Accept-Charset", "UTF-8");
         eiRequestHeadersMap.put("Content-Type", "application/json");
     }
@@ -66,16 +59,11 @@ public class MsAzureStorageConnectorIntegrationTest extends ConnectorIntegration
             description = "msazurestorage {listContainers} integration test with mandatory parameter.")
     public void testListContainersWithMandatoryParameters() throws Exception {
 
-        CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-        CloudBlobClient serviceClient = account.createCloudBlobClient();
-
-        String containerFromApi = serviceClient.listContainers().iterator().next().getName();
         eiRequestHeadersMap.put("Action", "urn:listContainers");
         RestResponse<JSONObject> eiRestResponse = sendJsonRestRequest(proxyUrl, "POST", eiRequestHeadersMap,
                 "listContainers.json");
-        String containerUriFromEI = eiRestResponse.getBody().getJSONObject("result").getJSONArray("container").
-                get(0).toString();
-        Assert.assertEquals(containerUriFromEI, containerFromApi);
+        String containersFromEi = eiRestResponse.getBody().getJSONObject("result").getJSONArray("container").toString();
+        Assert.assertTrue(containersFromEi.contains(connectorProperties.getProperty("containerName")));
     }
 
     @Test(enabled = true, groups = {"wso2.ei"}, dependsOnMethods = {"testListContainersWithMandatoryParameters"},
@@ -98,20 +86,13 @@ public class MsAzureStorageConnectorIntegrationTest extends ConnectorIntegration
             description = "msazurestorage {listBlobs} integration test with mandatory parameter.")
     public void testListBlobsWithMandatoryParameters() throws Exception {
 
-        CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-        CloudBlobClient serviceClient = account.createCloudBlobClient();
-        CloudBlobContainer container = serviceClient.getContainerReference(connectorProperties.
-                getProperty("containerName"));
-        String blopFromApi = container.listBlobs().iterator().next().getUri().toString();
-
         eiRequestHeadersMap.put("Action", "urn:listBlobs");
         RestResponse<JSONObject> eiRestResponse =
                 sendJsonRestRequest(proxyUrl, "POST", eiRequestHeadersMap, "listBlobs.json");
-        String blopFromEI = eiRestResponse.getBody().getJSONObject("result").getString("blob");
-        Assert.assertEquals(blopFromEI, blopFromApi);
+        String blopsFromEI = eiRestResponse.getBody().getJSONObject("result").toString();
+        Assert.assertTrue(blopsFromEI.contains(connectorProperties.getProperty("containerName")));
     }
-
-
+    
     @Test(enabled = true, groups = {"wso2.ei"}, dependsOnMethods = {"testListBlobsWithMandatoryParameters"},
             description = "msazurestorage {deleteBlob} integration test with mandatory parameter.")
     public void testDeleteBlobWithMandatoryParameters() throws Exception {

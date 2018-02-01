@@ -15,7 +15,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package org.wso2.carbon.connector.util;
+package org.wso2.carbon.connector.azure.storage.util;
 
 /**
  * This class contains the azure connector specific constants.

@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.wso2.carbon.connector;
+package org.wso2.carbon.connector.azure.storage;
 
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
@@ -23,8 +23,8 @@ import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.AbstractConnector;
-import org.wso2.carbon.connector.util.AzureConstants;
-import org.wso2.carbon.connector.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
@@ -39,22 +39,24 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 public class ContainersRetriever extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty
+                (AzureConstants.ACCOUNT_KEY) == null) {
+            handleException("Mandatory parameters cannot be empty.", messageContext);
+        }
+
         String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
         String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
+
         String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
                 + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
-
-        ResultPayloadCreator resultPayload = new ResultPayloadCreator();
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
-        resultPayload.preparePayload(messageContext, result);
+        ResultPayloadCreator.preparePayload(messageContext, result);
         String outputResult;
-        CloudStorageAccount account;
-        CloudBlobClient serviceClient;
         try {
-            account = CloudStorageAccount.parse(storageConnectionString);
-            serviceClient = account.createCloudBlobClient();
+            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
+            CloudBlobClient serviceClient = account.createCloudBlobClient();
             for (CloudBlobContainer container : serviceClient.listContainers()) {
                 outputResult = container.getName();
                 OMElement messageElement = factory.createOMElement(AzureConstants.CONTAINER, ns);

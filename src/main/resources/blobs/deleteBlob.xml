@@ -21,6 +21,6 @@
     <sequence>
         <property name="containerName" expression="$func:containerName"/>
         <property name="fileName" expression="$func:fileName"/>
-        <class name="org.wso2.carbon.connector.BlobEraser"/>
+        <class name="org.wso2.carbon.connector.azure.storage.BlobEraser"/>
     </sequence>
 </template>

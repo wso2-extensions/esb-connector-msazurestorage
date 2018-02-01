@@ -19,6 +19,6 @@
     <parameter name="containerName" description="The name of the container."/>
     <sequence>
         <property name="containerName" expression="$func:containerName"/>
-        <class name="org.wso2.carbon.connector.ContainerCreator"/>
+        <class name="org.wso2.carbon.connector.azure.storage.ContainerCreator"/>
     </sequence>
 </template>

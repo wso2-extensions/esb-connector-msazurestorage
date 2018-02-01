@@ -15,7 +15,7 @@
 * specific language governing permissions and limitations
 * under the License.
 */
-package org.wso2.carbon.connector.util;
+package org.wso2.carbon.connector.azure.storage.util;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.util.AXIOMUtil;
@@ -31,13 +31,17 @@ import java.util.Iterator;
  */
 public class ResultPayloadCreator {
 
+    private ResultPayloadCreator(){
+
+    }
+
     /**
      * Prepare payload.
      *
      * @param messageContext The message context that is processed by a handler in the handle method.
      * @param element        OMElement.
      */
-    public void preparePayload(MessageContext messageContext, OMElement element) {
+    public static void preparePayload(MessageContext messageContext, OMElement element) {
         SOAPBody soapBody = messageContext.getEnvelope().getBody();
         for (Iterator itr = soapBody.getChildElements(); itr.hasNext(); ) {
             OMElement child = (OMElement) itr.next();
@@ -56,7 +60,7 @@ public class ResultPayloadCreator {
      * @return return resultElement.
      * @throws XMLStreamException if XML exception occurs.
      */
-    public OMElement performSearchMessages(String output) throws XMLStreamException {
+    public static OMElement performSearchMessages(String output) throws XMLStreamException {
         OMElement resultElement;
         if (StringUtils.isNotEmpty(output)) {
             resultElement = AXIOMUtil.stringToOM(output);
