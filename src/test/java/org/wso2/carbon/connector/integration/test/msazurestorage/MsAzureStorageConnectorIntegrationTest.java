@@ -17,6 +17,7 @@
 */
 package org.wso2.carbon.connector.integration.test.msazurestorage;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -62,8 +63,16 @@ public class MsAzureStorageConnectorIntegrationTest extends ConnectorIntegration
         eiRequestHeadersMap.put("Action", "urn:listContainers");
         RestResponse<JSONObject> eiRestResponse = sendJsonRestRequest(proxyUrl, "POST", eiRequestHeadersMap,
                 "listContainers.json");
-        String containersFromEi = eiRestResponse.getBody().getJSONObject("result").getJSONArray("container").toString();
-        Assert.assertTrue(containersFromEi.contains(connectorProperties.getProperty("containerName")));
+        JSONArray jsonArray = eiRestResponse.getBody().getJSONObject("result").getJSONArray("container");
+        boolean state = false;
+        for (int i = 0 ; i < jsonArray.length(); i++) {
+            String name = jsonArray.getString(i);
+            if (name.equals(connectorProperties.getProperty("containerName"))){
+                state = true;
+                break;
+            }
+        }
+        Assert.assertTrue(state);
     }
 
     @Test(enabled = true, groups = {"wso2.ei"}, dependsOnMethods = {"testListContainersWithMandatoryParameters"},
