@@ -1,0 +1,39 @@
+﻿Product: Integration tests for WSO2 ESB Microsoft Azure Storage connector
+
+Pre-requisites:
+
+ - Maven 3.x
+ - Java 1.8
+
+Tested Platform:
+ - UBUNTU 16.04
+ - WSO2 EI 6.1.1
+
+Steps to follow in setting integration test.
+
+ 1. Download EI WSO2 EI 6.1.1 from official website. Extract the zip file and download the azure-storage-6.1.0.jar from the
+ https://mvnrepository.com/artifact/com.microsoft.azure/azure-storage/6.1.0 and copy the jar to the <EI_HOME>/lib directory.
+ Compress the EI pack and place it to repository folder
+
+ 2. Create a Microsoft Azure account and creating the credentials for using the Microsoft Azure storage Connector:
+
+ 	i)      Create an Azure account. (https://azure.microsoft.com/en-in/free/)
+
+ 	ii)     Go to the dashboard and click Storage accounts then click add and fill the required details to create new
+ 	        storage account. Note the name of the account for later use.
+            (For more details - https://docs.microsoft.com/en-us/azure/storage/common/storage-create-storage-account)
+
+ 	iii) 	Go to your storage account and click Access keys under Settings. Copy one of the key for later use.
+
+ 	iv)     Create an container.
+
+ 3. Update the msazurestorage properties file at location
+    "{MSAZURESTORAGE_CONNECTOR_HOME}/src/test/resources/artifacts/ESB/connector/config" as below.
+
+     i)     accountName         -   Use the account name you got from step 2. ii.
+     ii)    accountKey          -   Use the access key you got from step 2. iii.
+     iii)   containerName       -   The name for the container other than used in step 2. iv.
+     iv)    fileName            -   The name for the file.
+
+ 4. Navigate to "{MSAZURESTORAGE_CONNECTOR_HOME}" and run the following command.
+       $ mvn clean install -Dskip-tests=false
