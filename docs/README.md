@@ -6,7 +6,7 @@ The Microsoft Azure Storage [Connector](https://docs.wso2.com/display/EI611/Work
 To get started, go to [Configuring MsAzureStorage Operations](config.md). Once you have completed your configurations, you can perform various operations with the connector.
 
 ## Additional information
-For general information on using connectors and their operations, see [working with Connectors](https://docs.wso2.com/display/EI611/Working+with+Connectors). To download the connector, go to [https://store.wso2.com/store/assets/esbconnector/details/msazurestorage](https://store.wso2.com/store/assets/esbconnector/details/), click **MS Azure Storage**, and then click **Download Connector**. Next, [add and enable the connector](https://docs.wso2.com/display/EI611/Working+with+Connectors+via+the+Management+Console) in the ESB Profile of WSO2 EI.
+For general information on using connectors and their operations, see [working with Connectors](https://docs.wso2.com/display/EI611/Working+with+Connectors). To download the connector, go to [https://store.wso2.com/store/assets/esbconnector/details/msazurestorage](https://store.wso2.com/store/assets/esbconnector/details/84ea93da-8dec-4c39-b57a-cf15644f19c8), click **MS Azure Storage**, and then click **Download Connector**. Next, [add and enable the connector](https://docs.wso2.com/display/EI611/Working+with+Connectors+via+the+Management+Console) in the ESB Profile of WSO2 EI.
 
 | | Version |
 | ------------- |-------------|
