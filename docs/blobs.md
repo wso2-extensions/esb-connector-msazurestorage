@@ -4,22 +4,22 @@
 
 ### Overview 
 
-The following operations allow you to work with blobs. Click an operation name to see details on how to use it.
-For a sample proxy service that illustrates how to work with blobs, see [Sample configuration](#sample-configuration).
+The following operations allow you to work with Blobs. Click an operation name to learn how to use it.
+For a sample proxy service that illustrates how to work with Blobs, see [Sample configuration](#sample-configuration).
 
 | Operation        | Description |
 | ------------- |-------------|
-| [uploadBlob](#uploads-a-blob-file-into-the-storage)    | Uploads a blob file into the storage. |
-| [deleteBlob](#deletes-a-blob-file-from-the-storage)      | Deletes a blob file from the storage.     |
-| [listBlobs](#retrieves-information-about-all-blobs-in-a-container)    | Retrieves information about all blobs in a container. |
+| [uploadBlob](#uploads-a-blob-file-into-the-storage)    | Uploads a Blob file into the storage. |
+| [deleteBlob](#deletes-a-blob-file-from-the-storage)      | Deletes a Blob file from the storage.     |
+| [listBlobs](#retrieves-information-about-all-blobs-in-a-container)    | Retrieves information about all Blobs in a container. |
 
 ### Operation details
 
-This section provides more details on each of the operations.
+This section provides more information on each of the operations.
 
 #### Uploads a blob file into the storage
 
-The uploadBlob operation uploads a blob file into the storage.
+The uploadBlob operation uploads a Blob file into the storage.
 
 **uploadBlob**
 ```xml
@@ -37,7 +37,7 @@ The uploadBlob operation uploads a blob file into the storage.
 
 **Sample request**
 
-Following is a sample request that can be handled by the uploadBlob operation.
+Given below is a sample request for the uploadBlob operation.
 
 ```json
 {
@@ -55,7 +55,7 @@ Following is a sample request that can be handled by the uploadBlob operation.
 
 #### Deletes a blob file from the storage
 
-The deleteBlob operation deletes a blob file from the storage.
+The deleteBlob operation deletes a Blob file from the storage.
 
 **deleteBlob**
 ```xml
@@ -71,7 +71,7 @@ The deleteBlob operation deletes a blob file from the storage.
 
 **Sample request**
 
-Following is a sample request that can be handled by the deleteBlob operation.
+Given below is a sample request for the deleteBlob operation.
 
 ```json
 {
@@ -85,9 +85,9 @@ Following is a sample request that can be handled by the deleteBlob operation.
 
 [https://docs.microsoft.com/en-us/azure/storage/blobs/storage-java-how-to-use-blob-storage](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-java-how-to-use-blob-storage)
 
-#### Retrieves information about all bobs in a container
+#### Retrieves information about all Blobs in a container
 
-The listBlobs operation retrieves information about all blobs in a container.
+The listBlobs operation retrieves information about all Blobs in a container.
 
 **listBlobs**
 ```xml
@@ -101,7 +101,7 @@ The listBlobs operation retrieves information about all blobs in a container.
 
 **Sample request**
 
-Following is a sample request that can be handled by the listBlobs operation.
+Given below is a sample request that can be handled by the listBlobs operation.
 
 ```json
 {
@@ -117,7 +117,7 @@ Following is a sample request that can be handled by the listBlobs operation.
 
 #### Sample configuration
 
-Following is a sample proxy service that illustrates how to connect to Microsoft Azure Storage with the init operation and use the listBlobs operation. The sample request for this proxy can be found in the listBlobs sample request.
+Given below is a sample proxy service that illustrates how to connect to Microsoft Azure Storage with the init operation and use the listBlobs operation. You can find the sample request for this proxy in the listBlobs sample request.
 
 **Sample Proxy**
 ```xml
