@@ -15,9 +15,9 @@ For a sample proxy service that illustrates how to work with containers, see [Sa
 
 ### Operation details
 
-This section provides more details on each of the operations.
+This section gives information about each of the operations.
 
-#### Creates a container in the storage
+#### Create a container in the storage
 
 The createContainer operation creates a container in the storage.
 
@@ -33,7 +33,7 @@ The createContainer operation creates a container in the storage.
 
 **Sample request**
 
-Following is a sample request that can be handled by the createContainer operation.
+Given below is a sample request that can be handled by the createContainer operation.
 
 ```json
 {
@@ -47,7 +47,7 @@ Following is a sample request that can be handled by the createContainer operati
 
 [https://docs.microsoft.com/en-us/azure/storage/containers/storage-java-how-to-use-container-storage](https://docs.microsoft.com/en-us/azure/storage/containers/storage-java-how-to-use-container-storage)
 
-#### Deletes a container from the storage
+#### Delete a container from the storage
 
 The deleteContainer operation deletes a container from the storage.
 
@@ -63,7 +63,7 @@ The deleteContainer operation deletes a container from the storage.
 
 **Sample request**
 
-Following is a sample request that can be handled by the deleteContainer operation.
+Given below is a sample request that can be handled by the deleteContainer operation.
 
 ```json
 {
@@ -76,7 +76,7 @@ Following is a sample request that can be handled by the deleteContainer operati
 
 [https://docs.microsoft.com/en-us/azure/storage/containers/storage-java-how-to-use-container-storage](https://docs.microsoft.com/en-us/azure/storage/containers/storage-java-how-to-use-container-storage)
 
-#### Retrieves information about all containers
+#### Retrieve information about all containers
 
 The listContainers operation retrieves information about all containers in the storage.
 
@@ -87,7 +87,7 @@ The listContainers operation retrieves information about all containers in the s
 
 **Sample request**
 
-Following is a sample request that can be handled by the listContainers operation.
+Given below is a sample request that can be handled by the listContainers operation.
 
 ```json
 {
@@ -102,7 +102,7 @@ Following is a sample request that can be handled by the listContainers operatio
 
 #### Sample configuration
 
-Following is a sample proxy service that illustrates how to connect to Microsoft Azure Storage with the init operation and use the listContainers operation. The sample request for this proxy can be found in the listContainers sample request.
+Given below is a sample proxy service that illustrates how to connect to Microsoft Azure Storage with the init operation and see information about all containers with the listContainers operation. The sample request for this proxy can be found in the listContainers sample request.
 
 **Sample Proxy**
 ```xml
