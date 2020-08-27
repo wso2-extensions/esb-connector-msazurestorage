@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
    Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
@@ -16,13 +15,8 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<connector>
-    <component name="msazurestorage" package="org.wso2.carbon.connector" >
-        <dependency component="config" />
-        <dependency component="blobs" />
-        <dependency component="containers" />
-        <dependency component="queues" />
-        <description>WSO2 Microsoft Azure Storage connector library</description>
-    </component>
-    <icon>icon/icon-small.gif</icon>
-</connector>
+<template xmlns="http://ws.apache.org/ns/synapse" name="listQueues">
+    <sequence>
+        <class name="org.wso2.carbon.connector.azure.storage.QueuesRetriever"/>
+    </sequence>
+</template>

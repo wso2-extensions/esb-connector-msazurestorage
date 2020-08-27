@@ -36,6 +36,7 @@ public class AzureConstants {
     public static final String AZURE_NAMESPACE = "http://org.wso2.esbconnectors.msazurestorageconnector";
     public static final String BLOB = "blob";
     public static final String CONTAINER = "container";
+    public static final String QUEUE = "queue";
     public static final String RESULT = "result";
     public static final String START_TAG = "<result><success>";
     public static final String END_TAG = "</success></result>";

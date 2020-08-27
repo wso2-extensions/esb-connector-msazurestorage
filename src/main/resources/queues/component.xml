@@ -16,13 +16,11 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<connector>
-    <component name="msazurestorage" package="org.wso2.carbon.connector" >
-        <dependency component="config" />
-        <dependency component="blobs" />
-        <dependency component="containers" />
-        <dependency component="queues" />
-        <description>WSO2 Microsoft Azure Storage connector library</description>
-    </component>
-    <icon>icon/icon-small.gif</icon>
-</connector>
+<component name="queues" type="synapse/template">
+    <subComponents>
+        <component name="listQueues">
+            <file>listQueues.xml</file>
+            <description>Gets the list of all queues.</description>
+        </component>
+    </subComponents>
+</component>
