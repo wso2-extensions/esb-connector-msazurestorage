@@ -27,8 +27,9 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
-import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.apache.synapse.SynapseLog;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.core.AbstractConnector;
 
 import java.net.URISyntaxException;
@@ -59,23 +60,28 @@ public class QueuesRetriever extends AbstractConnector {
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
         ResultPayloadCreator.preparePayload(messageContext, result);
         String outputResult;
+        SynapseLog log = getLog(messageContext);
+        log.auditLog("Start creating client");
         try {
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudQueueClient queueClient = account.createCloudQueueClient();
             for (CloudQueue queue : queueClient.listQueues()) {
                 outputResult = queue.getName();
-                System.out.println(outputResult);
                 OMElement messageElement = factory.createOMElement(AzureConstants.QUEUE, ns);
                 messageElement.setText(outputResult);
                 result.addChild(messageElement);
             }
+            log.auditLog("Finished creating response");
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
             handleException("Invalid account key found.", e, messageContext);
         } catch (Exception e) {
-            handleException("Excepetion: ", e, messageContext);
+            handleException("Exception: ", e, messageContext);
         }
+        log.auditLog("Response: " + result);
+        log.auditLog("Trace: " + messageContext.getProperty("$body/content"));
+        messageContext.setResponse(true);
         messageContext.getEnvelope().getBody().addChild(result);
     }
 }
