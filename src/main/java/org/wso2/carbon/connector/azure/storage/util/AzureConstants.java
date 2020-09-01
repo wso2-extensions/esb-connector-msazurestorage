@@ -39,6 +39,7 @@ public class AzureConstants {
     public static final String QUEUE = "queue";
     public static final String QUEUE_NAME = "azureQueueName";
     public static final String RESULT = "result";
+    public static final String MESSAGE = "message";
     public static final String START_TAG = "<result><success>";
     public static final String END_TAG = "</success></result>";
     public static final String EMPTY_RESULT_TAG = "<result></></result>";

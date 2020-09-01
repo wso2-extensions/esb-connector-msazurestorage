@@ -15,7 +15,7 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<template xmlns="http://ws.apache.org/ns/synapse" name="addMessage">
+<template xmlns="http://ws.apache.org/ns/synapse" name="queuesAddMessage">
     <parameter name="queueName" description="The name of the queue to add a message."/>
     <sequence>
         <property name="azureQueueName" expression="$func:queueName"/>

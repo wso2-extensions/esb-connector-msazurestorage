@@ -15,7 +15,7 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<template xmlns="http://ws.apache.org/ns/synapse" name="listQueues">
+<template xmlns="http://ws.apache.org/ns/synapse" name="queuesList">
     <sequence>
         <class name="org.wso2.carbon.connector.azure.storage.QueuesRetriever"/>
     </sequence>

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
    Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
@@ -16,19 +15,10 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<component name="queues" type="synapse/template">
-    <subComponents>
-        <component name="queuesList">
-            <file>queuesList.xml</file>
-            <description>Gets the list of all queues.</description>
-        </component>
-        <component name="queuesAddMessage">
-            <file>queuesAddMessage.xml</file>
-            <description>Add a message to a queue.</description>
-        </component>
-        <component name="queuesPeekMessage">
-            <file>queuesPeekMessage.xml</file>
-            <description>Peek at the next message.</description>
-        </component>
-    </subComponents>
-</component>
+<template xmlns="http://ws.apache.org/ns/synapse" name="queuesPeekMessage">
+    <parameter name="queueName" description="The name of the queue to peek a message from."/>
+    <sequence>
+        <property name="azureQueueName" expression="$func:queueName"/>
+        <class name="org.wso2.carbon.connector.azure.storage.QueuesPeekMessage"/>
+    </sequence>
+</template>
