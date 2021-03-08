@@ -38,18 +38,21 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 public class ContainerCreator extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty
-                (AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.
-                CONTAINER_NAME) == null) {
+        if (messageContext.getProperty(AzureConstants.PROTOCOL) == null ||
+                messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null ||
+                messageContext.getProperty(AzureConstants.ACCOUNT_KEY) == null ||
+                messageContext.getProperty(AzureConstants.CONTAINER_NAME) == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
 
+        String protocol = messageContext.getProperty(AzureConstants.PROTOCOL).toString();
         String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
         String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
         String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
 
         boolean resultStatus = false;
-        String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
+        String storageConnectionString = AzureConstants.PROTOCOL_KEY_PARAM + protocol + AzureConstants.SEMICOLON +
+                AzureConstants.ACCOUNT_NAME_PARAM + accountName + AzureConstants.SEMICOLON
                 + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
         try {
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);

@@ -16,13 +16,19 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<template name="init" onError="fault" xmlns="http://ws.apache.org/ns/synapse">
-	<parameter name="defaultEndpointsProtocol" description="The protocol (http or https) of the azure storage account."/>
-	<parameter name="accountName" description="The name of the azure storage account."/>
-	<parameter name="accountKey" description="The access key for the storage account."/>
-	<sequence>
-		<property name="azureAccountName" expression="$func:accountName"/>
-		<property name="azureAccountKey" expression="$func:accountKey"/>
-		<property name="defaultEndpointsProtocol" expression="$func:defaultEndpointsProtocol"/>
-	</sequence>
-</template>
+<component name="queues" type="synapse/template">
+    <subComponents>
+        <component name="queuesList">
+            <file>queuesList.xml</file>
+            <description>Gets the list of all queues.</description>
+        </component>
+        <component name="queuesAddMessage">
+            <file>queuesAddMessage.xml</file>
+            <description>Add a message to a queue.</description>
+        </component>
+        <component name="queuesPeekMessage">
+            <file>queuesPeekMessage.xml</file>
+            <description>Peek at the next message.</description>
+        </component>
+    </subComponents>
+</component>
