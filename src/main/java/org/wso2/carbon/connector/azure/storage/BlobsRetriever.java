@@ -28,6 +28,7 @@ import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.NoSuchElementException;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
@@ -77,6 +78,9 @@ public class BlobsRetriever extends AbstractConnector {
             handleException("Invalid account key found.", e, messageContext);
         } catch (StorageException e) {
             handleException("Error occurred while connecting to the storage.", e, messageContext);
+        }catch (NoSuchElementException e){
+            // No such element exception can be occurred due to server authentication failure.
+            handleException("Error occurred while listing the container", e, messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
     }
