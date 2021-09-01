@@ -22,6 +22,7 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
+import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
@@ -43,12 +44,7 @@ public class ContainersRetriever extends AbstractConnector {
                 (AzureConstants.ACCOUNT_KEY) == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
-
-        String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
-        String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
-
-        String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
-                + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
+        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
