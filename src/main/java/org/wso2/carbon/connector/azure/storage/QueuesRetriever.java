@@ -17,26 +17,26 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.queue.CloudQueue;
+import com.microsoft.azure.storage.queue.CloudQueueClient;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
-import org.wso2.carbon.connector.core.AbstractConnector;
+import org.apache.synapse.core.SynapseEnvironment;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.core.AbstractConnector;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-
 /**
  * This class for performing list containers operation.
  */
-public class ContainersRetriever extends AbstractConnector {
+public class QueuesRetriever extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
         if (messageContext.getProperty(AzureConstants.PROTOCOL) == null ||
@@ -51,7 +51,7 @@ public class ContainersRetriever extends AbstractConnector {
 
         String storageConnectionString = AzureConstants.PROTOCOL_KEY_PARAM + protocol + AzureConstants.SEMICOLON +
                 AzureConstants.ACCOUNT_NAME_PARAM + accountName + AzureConstants.SEMICOLON
-                + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
+                + AzureConstants.ACCOUNT_KEY_PARAM + accountKey + AzureConstants.SEMICOLON;
 
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
@@ -60,10 +60,10 @@ public class ContainersRetriever extends AbstractConnector {
         String outputResult;
         try {
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-            CloudBlobClient serviceClient = account.createCloudBlobClient();
-            for (CloudBlobContainer container : serviceClient.listContainers()) {
-                outputResult = container.getName();
-                OMElement messageElement = factory.createOMElement(AzureConstants.CONTAINER, ns);
+            CloudQueueClient queueClient = account.createCloudQueueClient();
+            for (CloudQueue queue : queueClient.listQueues()) {
+                outputResult = queue.getName();
+                OMElement messageElement = factory.createOMElement(AzureConstants.QUEUE, ns);
                 messageElement.setText(outputResult);
                 result.addChild(messageElement);
             }
@@ -71,6 +71,8 @@ public class ContainersRetriever extends AbstractConnector {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
             handleException("Invalid account key found.", e, messageContext);
+        } catch (Exception e) {
+            handleException("Exception: ", e, messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
     }
