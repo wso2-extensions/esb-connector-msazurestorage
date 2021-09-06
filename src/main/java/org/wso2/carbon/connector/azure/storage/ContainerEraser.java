@@ -19,6 +19,7 @@ package org.wso2.carbon.connector.azure.storage;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.synapse.MessageContext;
+import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
@@ -43,14 +44,9 @@ public class ContainerEraser extends AbstractConnector {
                 CONTAINER_NAME) == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
-
-        String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
-        String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
         String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
-
         boolean resultStatus = false;
-        String storageConnectionString = AzureConstants.ENDPOINT_PARAM + accountName + AzureConstants.SEMICOLON
-                + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
+        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
         try {
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();

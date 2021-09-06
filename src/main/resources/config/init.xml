@@ -19,8 +19,10 @@
 <template name="init" onError="fault" xmlns="http://ws.apache.org/ns/synapse">
 	<parameter name="accountName" description="The name of the azure storage account."/>
 	<parameter name="accountKey" description="The access key for the storage account."/>
+	<parameter name="defaultEndpointsProtocol" description="The protocol (http or https) of the azure storage account."/>
 	<sequence>
 		<property name="azureAccountName" expression="$func:accountName"/>
 		<property name="azureAccountKey" expression="$func:accountKey"/>
+		<property name="defaultEndpointsProtocol" expression="$func:defaultEndpointsProtocol"/>
 	</sequence>
 </template>
