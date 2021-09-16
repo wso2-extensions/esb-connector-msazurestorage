@@ -19,10 +19,12 @@
     <parameter name="containerName" description="The name of the container."/>
     <parameter name="filePath" description="The path of the file to be uploaded."/>
     <parameter name="fileName" description="The name of the file."/>
+    <parameter name="blobContentType" description="The Content-type of the file to be uploaded"/>
     <sequence>
         <property name="containerName" expression="$func:containerName"/>
         <property name="filePath" expression="$func:filePath"/>
         <property name="fileName" expression="$func:fileName"/>
+        <property name="blobContentType" expression="$func:blobContentType"/>
         <class name="org.wso2.carbon.connector.azure.storage.BlobUploader"/>
     </sequence>
 </template>
