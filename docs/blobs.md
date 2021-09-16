@@ -27,6 +27,7 @@ The uploadBlob operation uploads a Blob file into the storage.
     <containerName>{$ctx:containerName}</containerName>
     <fileName>{$ctx:fileName}</fileName>
     <filePath>{$ctx:filePath}</filePath>
+    <blobContentType>{$ctx:fileContentType}</blobContentType>
 </msazurestorage.uploadBlob>
 ```
 
@@ -34,6 +35,7 @@ The uploadBlob operation uploads a Blob file into the storage.
 * containerName: The name of the container.
 * fileName: The name of the file.
 * filePath: The path to a local file to be uploaded.
+* blobContentType: The Content-type of the file to be uploaded
 
 **Sample request**
 
