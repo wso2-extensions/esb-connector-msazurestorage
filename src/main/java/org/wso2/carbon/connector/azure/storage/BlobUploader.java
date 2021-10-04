@@ -64,8 +64,8 @@ public class BlobUploader extends AbstractConnector {
             CloudBlockBlob blob = container.getBlockBlobReference(fileName);
             File sourceFile = new File(filePath);
             fileInputStream = new FileInputStream(sourceFile);
-            if (messageContext.getProperty(AzureConstants.BLOBCONTENTTYPE) != null) {
-                String blobContentType = messageContext.getProperty(AzureConstants.BLOBCONTENTTYPE).toString();
+            if (messageContext.getProperty(AzureConstants.BLOB_CONTENT_TYPE) != null) {
+                String blobContentType = messageContext.getProperty(AzureConstants.BLOB_CONTENT_TYPE).toString();
                 blob.getProperties().setContentType(blobContentType);
             }
             blob.upload(fileInputStream, sourceFile.length());
