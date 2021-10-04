@@ -25,11 +25,13 @@ Specify the init method as follows:
 <msazurestorage.init>
     <accountName>{$ctx:accountName}</accountName>
     <accountKey>{$ctx:accountKey}</accountKey>
+    <defaultEndpointsProtocol>{$ctx:defaultEndpointsProtocol}</defaultEndpointsProtocol>
 </msazurestorage.init>
 ```
 **Properties** 
 * accountName:  The name of the azure storage account. 
 * accountKey:  The access key for the storage account.
+* defaultEndpointsProtocol: Type of the protocol(http/https) to connect.
 
 Now that you have connected to Microsoft Azure Storage, use the information in the following topics to perform various operations with the connector:
 
