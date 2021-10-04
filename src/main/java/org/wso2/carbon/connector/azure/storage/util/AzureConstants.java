@@ -28,7 +28,7 @@ public class AzureConstants {
     public static final String CONTAINER_NAME = "containerName";
     public static final String FILE_NAME = "fileName";
     public static final String FILE_PATH = "filePath";
-    public static final String BLOBCONTENTTYPE = "blobContentType";
+    public static final String BLOB_CONTENT_TYPE = "blobContentType";
     public static final String ENDPOINT_PARAM = "DefaultEndpointsProtocol=http;AccountName=";
     public static final String ACCOUNT_NAME_PARAM = "AccountName=";
     public static final String ACCOUNT_KEY_PARAM = "AccountKey=";
