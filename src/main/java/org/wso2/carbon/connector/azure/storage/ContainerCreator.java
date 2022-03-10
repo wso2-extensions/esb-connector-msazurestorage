@@ -32,6 +32,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class for performing create container operation.
@@ -39,20 +40,16 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 public class ContainerCreator extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty
-                (AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.
-                CONTAINER_NAME) == null) {
+        Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
+        if (containerName == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
-
-        String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
-
         boolean resultStatus = false;
-        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
         try {
+            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient blobClient = account.createCloudBlobClient();
-            CloudBlobContainer container = blobClient.getContainerReference(containerName);
+            CloudBlobContainer container = blobClient.getContainerReference((String) containerName);
             resultStatus = container.createIfNotExists();
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
@@ -60,6 +57,8 @@ public class ContainerCreator extends AbstractConnector {
             handleException("Invalid account key found.", e, messageContext);
         } catch (StorageException e) {
             handleException("Error occurred while connecting to the storage.", e, messageContext);
+        } catch (ConnectException e) {
+            handleException("Unexpected error occurred. ", e, messageContext);
         }
         generateResults(messageContext, resultStatus);
     }

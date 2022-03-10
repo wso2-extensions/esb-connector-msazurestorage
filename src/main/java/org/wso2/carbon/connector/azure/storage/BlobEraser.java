@@ -34,6 +34,7 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.DeleteSnapshotsOption;
+import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class for performing delete blob operation.
@@ -41,22 +42,20 @@ import com.microsoft.azure.storage.blob.DeleteSnapshotsOption;
 public class BlobEraser extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty(
-                AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.CONTAINER_NAME) == null
-                || messageContext.getProperty(AzureConstants.FILE_NAME) == null){
+        Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
+        Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
+
+        if (containerName == null || fileName == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
-
-        String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
-        String fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
-
         boolean resultStatus = false;
-        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
+
         try {
+            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
-            CloudBlobContainer container = serviceClient.getContainerReference(containerName);
-            CloudBlockBlob blob = container.getBlockBlobReference(fileName);
+            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
+            CloudBlockBlob blob = container.getBlockBlobReference((String) fileName);
             blob.delete(DeleteSnapshotsOption.NONE, null, null, null);
             resultStatus = true;
         } catch (URISyntaxException e) {
@@ -65,6 +64,8 @@ public class BlobEraser extends AbstractConnector {
             handleException("Invalid account key found.", e, messageContext);
         } catch (StorageException e) {
             handleException("Error occurred while connecting to the storage.", e, messageContext);
+        } catch (ConnectException e) {
+            handleException("Unexpected error occurred. ", e, messageContext);
         }
         generateResults(messageContext, resultStatus);
     }

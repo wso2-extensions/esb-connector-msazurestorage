@@ -33,6 +33,7 @@ import java.security.InvalidKeyException;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class for performing list containers operation.
@@ -40,17 +41,14 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 public class ContainersRetriever extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty
-                (AzureConstants.ACCOUNT_KEY) == null) {
-            handleException("Mandatory parameters cannot be empty.", messageContext);
-        }
-        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
+
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
         ResultPayloadCreator.preparePayload(messageContext, result);
         String outputResult;
         try {
+            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
             for (CloudBlobContainer container : serviceClient.listContainers()) {
@@ -63,6 +61,8 @@ public class ContainersRetriever extends AbstractConnector {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
             handleException("Invalid account key found.", e, messageContext);
+        } catch (ConnectException e) {
+            handleException("Unexpected error occurred. ", e, messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
     }
