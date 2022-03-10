@@ -36,6 +36,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class for performing upload blob operation.
@@ -43,32 +44,36 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 public class BlobUploader extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty(
-                AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.CONTAINER_NAME) == null
-                || messageContext.getProperty(AzureConstants.FILE_NAME) == null || messageContext.getProperty
-                (AzureConstants.FILE_PATH) == null){
+        Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
+        Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
+        Object filePath = messageContext.getProperty(AzureConstants.FILE_PATH);
+        Object textContent = messageContext.getProperty(AzureConstants.TEXT_CONTENT);
+        Object contentType = messageContext.getProperty(AzureConstants.BLOB_CONTENT_TYPE);
+
+        if (containerName == null || fileName == null || ((filePath == null) && (textContent == null))) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
 
-        String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
-        String fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
-        String filePath = messageContext.getProperty(AzureConstants.FILE_PATH).toString();
-
         boolean resultStatus = false;
-        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
         FileInputStream fileInputStream = null;
         try {
+            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
-            CloudBlobContainer container = serviceClient.getContainerReference(containerName);
-            CloudBlockBlob blob = container.getBlockBlobReference(fileName);
-            File sourceFile = new File(filePath);
-            fileInputStream = new FileInputStream(sourceFile);
-            if (messageContext.getProperty(AzureConstants.BLOB_CONTENT_TYPE) != null) {
-                String blobContentType = messageContext.getProperty(AzureConstants.BLOB_CONTENT_TYPE).toString();
+            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
+            CloudBlockBlob blob = container.getBlockBlobReference((String) fileName);
+            if (contentType != null) {
+                String blobContentType = (String) contentType;
                 blob.getProperties().setContentType(blobContentType);
             }
-            blob.upload(fileInputStream, sourceFile.length());
+            if (filePath != null) {
+                File sourceFile = new File((String) filePath);
+                fileInputStream = new FileInputStream(sourceFile);
+                blob.upload(fileInputStream, sourceFile.length());
+            } else {
+                // we are taking the payload from a property as text
+                blob.uploadText((String) textContent);
+            }
             resultStatus = true;
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
@@ -78,6 +83,8 @@ public class BlobUploader extends AbstractConnector {
             handleException("Error occurred while connecting to the storage.", e, messageContext);
         } catch (IOException e) {
             handleException("Error occurred while uploading the file.", e, messageContext);
+        } catch (ConnectException e) {
+            handleException("Unexpected error occurred. ", e, messageContext);
         }
         finally {
             if (fileInputStream != null) {
