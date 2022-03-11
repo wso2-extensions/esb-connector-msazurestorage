@@ -18,14 +18,18 @@
 package org.wso2.carbon.connector.azure.storage.util;
 
 import org.apache.synapse.MessageContext;
+import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class contain required util methods for to Azure Storage connector.
  */
 public class AzureUtil {
-    public static String getStorageConnectionString(MessageContext messageContext) {
-        String accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME).toString();
-        String accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY).toString();
+    public static String getStorageConnectionString(MessageContext messageContext) throws ConnectException {
+        Object accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME);
+        Object accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY);
+        if (accountKey == null || accountName == null ){
+            throw new ConnectException("Missing authentication parameters.");
+        }
         String protocol = AzureConstants.DEFAULT_PROTOCOL;
         Object protocolObject = messageContext.getProperty(AzureConstants.PROTOCOL);
         if (protocolObject != null) {

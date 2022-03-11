@@ -37,6 +37,7 @@ import com.microsoft.azure.storage.blob.CloudBlob;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
+import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class for performing list blobs operation.
@@ -44,24 +45,21 @@ import com.microsoft.azure.storage.blob.ListBlobItem;
 public class BlobsRetriever extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-        if (messageContext.getProperty(AzureConstants.ACCOUNT_NAME) == null || messageContext.getProperty
-                (AzureConstants.ACCOUNT_KEY) == null || messageContext.getProperty(AzureConstants.
-                CONTAINER_NAME) == null) {
+        Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
+        if (containerName == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
-
-        String containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
-
         String outputResult;
-        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
+
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
         ResultPayloadCreator.preparePayload(messageContext, result);
         try {
+            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
-            CloudBlobContainer container = serviceClient.getContainerReference(containerName);
+            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
             for (ListBlobItem blob : container.listBlobs()) {
                 if (blob instanceof CloudBlob) {
                     outputResult = blob.getUri().toString();
@@ -79,6 +77,8 @@ public class BlobsRetriever extends AbstractConnector {
         } catch (NoSuchElementException e) {
             // No such element exception can be occurred due to server authentication failure.
             handleException("Error occurred while listing the container", e, messageContext);
+        } catch (ConnectException e) {
+            handleException("Unexpected error occurred. ", e, messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
     }
