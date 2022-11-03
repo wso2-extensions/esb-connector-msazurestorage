@@ -200,6 +200,11 @@
             <artifactId>azure-storage</artifactId>
             <version>${azure.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.synapse</groupId>
+            <artifactId>synapse-nhttp-transport</artifactId>
+            <version>2.1.7-wso2v19</version>
+        </dependency>
     </dependencies>
     <scm>
         <connection>scm:git:https://github.com/wso2-extensions/esb-connector-msazurestorage.git</connection>
