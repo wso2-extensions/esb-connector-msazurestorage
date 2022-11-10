@@ -68,8 +68,7 @@ public class BlobDownloader extends AbstractConnector {
 
             CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
             CloudBlockBlob blob = container.getBlockBlobReference(fileName);
-	        
-	        
+
 	        FileDataSource fileDataSource = new FileDataSource(fileName);
 	        DataHandler handler = new DataHandler(fileDataSource);
 	        blob.download(handler.getOutputStream());
@@ -82,11 +81,10 @@ public class BlobDownloader extends AbstractConnector {
            
                       	
            	JsonUtil.removeJsonPayload(axis2MsgCtx);
-            axis2MsgCtx.
-                    removeProperty(PassThroughConstants.NO_ENTITY_BODY);
+            axis2MsgCtx.removeProperty(PassThroughConstants.NO_ENTITY_BODY);
            	OMElement fileElement = builder.processDocument(handler.getInputStream(), contentType, axis2MsgCtx);
            	messageContext.setEnvelope(TransportUtils.createSOAPEnvelope(fileElement));
-               result.addChild(factory.createOMElement("someProp", ns));
+            result.addChild(factory.createOMElement("someProp", ns));
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
