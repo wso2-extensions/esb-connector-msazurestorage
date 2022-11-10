@@ -51,6 +51,7 @@ import javax.activation.FileDataSource;
 public class BlobDownloader extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
         String fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
 
@@ -62,28 +63,27 @@ public class BlobDownloader extends AbstractConnector {
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
         ResultPayloadCreator.preparePayload(messageContext, result);
         try {
-	        String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
-	        CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-	        CloudBlobClient serviceClient = account.createCloudBlobClient();
+            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
+            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
+            CloudBlobClient serviceClient = account.createCloudBlobClient();
 
             CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
             CloudBlockBlob blob = container.getBlockBlobReference(fileName);
 
-	        FileDataSource fileDataSource = new FileDataSource(fileName);
-	        DataHandler handler = new DataHandler(fileDataSource);
-	        blob.download(handler.getOutputStream());
-	        
-	        String contentType = handler.getContentType();
-	        org.apache.axis2.context.MessageContext axis2MsgCtx = 
-	        		((org.apache.synapse.core.axis2.Axis2MessageContext) messageContext)
-	        		.getAxis2MessageContext();
-	        Builder builder = BuilderUtil.getBuilderFromSelector(contentType, axis2MsgCtx);
-           
-                      	
-           	JsonUtil.removeJsonPayload(axis2MsgCtx);
+            FileDataSource fileDataSource = new FileDataSource(fileName);
+            DataHandler handler = new DataHandler(fileDataSource);
+            blob.download(handler.getOutputStream());
+
+            String contentType = handler.getContentType();
+            org.apache.axis2.context.MessageContext axis2MsgCtx =
+                    ((org.apache.synapse.core.axis2.Axis2MessageContext) messageContext)
+                            .getAxis2MessageContext();
+            Builder builder = BuilderUtil.getBuilderFromSelector(contentType, axis2MsgCtx);
+
+            JsonUtil.removeJsonPayload(axis2MsgCtx);
             axis2MsgCtx.removeProperty(PassThroughConstants.NO_ENTITY_BODY);
-           	OMElement fileElement = builder.processDocument(handler.getInputStream(), contentType, axis2MsgCtx);
-           	messageContext.setEnvelope(TransportUtils.createSOAPEnvelope(fileElement));
+            OMElement fileElement = builder.processDocument(handler.getInputStream(), contentType, axis2MsgCtx);
+            messageContext.setEnvelope(TransportUtils.createSOAPEnvelope(fileElement));
             result.addChild(factory.createOMElement("someProp", ns));
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
@@ -96,9 +96,9 @@ public class BlobDownloader extends AbstractConnector {
             handleException("Error occurred while listing the container", e, messageContext);
         } catch (ConnectException e) {
             handleException("Unexpected error occurred.", e, messageContext);
-		} catch (IOException e) {
-			handleException("Error while building the response.", e, messageContext);
-		}
-        messageContext.getEnvelope().getBody().addChild(result);        
+        } catch (IOException e) {
+            handleException("Error while building the response.", e, messageContext);
+        }
+        messageContext.getEnvelope().getBody().addChild(result);
     }
 }
