@@ -30,5 +30,9 @@
             <file>deleteBlob.xml</file>
             <description>Deletes the blob from the Azure storage.</description>
         </component>
+        <component name="downloadBlob">
+            <file>downloadBlob.xml</file>
+            <description>Downloads the blob from the Azure storage.</description>
+        </component>
     </subComponents>
 </component>
