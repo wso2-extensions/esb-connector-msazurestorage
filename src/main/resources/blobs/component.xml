@@ -34,5 +34,9 @@
             <file>downloadBlob.xml</file>
             <description>Downloads the blob from the Azure storage.</description>
         </component>
+        <component name="fetchMetadata">
+            <file>fetchMetadata.xml</file>
+            <description>Downloads the metadata from the  blob from Azure storage.</description>
+        </component>
     </subComponents>
 </component>
