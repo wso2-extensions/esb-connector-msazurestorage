@@ -44,6 +44,8 @@ public class AzureConstants {
     public static final String END_TAG = "</success></result>";
     public static final String EMPTY_RESULT_TAG = "<result></></result>";
 
+    public static final String METADATA = "metadata";
+
     private AzureConstants() {
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-   Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+   Copyright (c) 2022, WSO2 LLc. (http://www.wso2.org) All Rights Reserved.
 
    WSO2 Inc. licenses this file to you under the Apache License,
    Version 2.0 (the "License"); you may not use this file except
@@ -33,10 +33,6 @@
         <component name="downloadBlob">
             <file>downloadBlob.xml</file>
             <description>Downloads the blob from the Azure storage.</description>
-        </component>
-        <component name="fetchMetadata">
-            <file>fetchMetadata.xml</file>
-            <description>Downloads the metadata from the  blob from Azure storage.</description>
         </component>
     </subComponents>
 </component>

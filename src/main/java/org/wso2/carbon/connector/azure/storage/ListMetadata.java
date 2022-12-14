@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2022, WSO2 LLc. (http://www.wso2.org) All Rights Reserved.
  *
  *  WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -37,12 +37,13 @@ import org.wso2.carbon.connector.core.ConnectException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
  * This class for getting the metadata from the blob
  */
-public class FetchMetadata extends AbstractConnector {
+public class ListMetadata extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
@@ -56,6 +57,8 @@ public class FetchMetadata extends AbstractConnector {
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
         ResultPayloadCreator.preparePayload(messageContext, result);
+        OMElement messageElement2 = factory.createOMElement(AzureConstants.METADATA, ns);
+        result.addChild(messageElement2);
         try {
             String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
@@ -64,12 +67,14 @@ public class FetchMetadata extends AbstractConnector {
             CloudBlob blob = container.getBlobReferenceFromServer(fileName);
             blob.downloadAttributes();
             HashMap<String, String> blobMetadata;
-            blobMetadata= blob.getMetadata();
-            JSONObject metaJson = new JSONObject(blobMetadata);
-            outputResult = metaJson.toString();
-            OMElement messageElement = factory.createOMElement(AzureConstants.BLOB, ns);
-            messageElement.setText(outputResult);
-            result.addChild(messageElement);
+            blobMetadata = blob.getMetadata();
+
+            for (Map.Entry<String, String> entry : blobMetadata.entrySet()) {
+                outputResult = entry.getValue();
+                OMElement messageElement = factory.createOMElement(entry.getKey(), ns);
+                messageElement.setText(outputResult);
+                messageElement2.addChild(messageElement);
+            }
 
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);

@@ -1,5 +1,5 @@
 <!--
-   Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+   Copyright (c) 2022, WSO2 LLc. (http://www.wso2.org) All Rights Reserved.
 
    WSO2 LLC. licenses this file to you under the Apache License,
    Version 2.0 (the "License"); you may not use this file except
@@ -15,12 +15,12 @@
    specific language governing permissions and limitations
    under the License.
 -->
-<template name="fetchMetadata" xmlns="http://ws.apache.org/ns/synapse">
+<template xmlns="http://ws.apache.org/ns/synapse" name="listMetadata">
     <parameter defaultValue="" isMandatory="false" name="containerName"/>
     <parameter defaultValue="" isMandatory="false" name="fileName"/>
     <sequence>
         <property expression="$func:containerName" name="containerName" scope="default" type="STRING"/>
         <property expression="$func:fileName" name="fileName" scope="default" type="STRING"/>
-        <class name="org.wso2.carbon.connector.azure.storage.FetchMetadata"/>
+        <class name="org.wso2.carbon.connector.azure.storage.ListMetadata"/>
     </sequence>
 </template>
