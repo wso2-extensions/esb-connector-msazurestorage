@@ -48,7 +48,7 @@ public class ListMetadata extends AbstractConnector {
     public void connect(MessageContext messageContext) {
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
         String fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
-        if (containerName == null) {
+        if (containerName == null || fileName == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
         String outputResult;
@@ -57,8 +57,8 @@ public class ListMetadata extends AbstractConnector {
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);
         ResultPayloadCreator.preparePayload(messageContext, result);
-        OMElement messageElement2 = factory.createOMElement(AzureConstants.METADATA, ns);
-        result.addChild(messageElement2);
+        OMElement metadataElement = factory.createOMElement(AzureConstants.METADATA, ns);
+        result.addChild(metadataElement);
         try {
             String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
@@ -66,14 +66,13 @@ public class ListMetadata extends AbstractConnector {
             CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
             CloudBlob blob = container.getBlobReferenceFromServer(fileName);
             blob.downloadAttributes();
-            HashMap<String, String> blobMetadata;
-            blobMetadata = blob.getMetadata();
+            HashMap<String, String> blobMetadata  = blob.getMetadata();
 
             for (Map.Entry<String, String> entry : blobMetadata.entrySet()) {
                 outputResult = entry.getValue();
                 OMElement messageElement = factory.createOMElement(entry.getKey(), ns);
                 messageElement.setText(outputResult);
-                messageElement2.addChild(messageElement);
+                metadataElement.addChild(messageElement);
             }
 
         } catch (URISyntaxException e) {
