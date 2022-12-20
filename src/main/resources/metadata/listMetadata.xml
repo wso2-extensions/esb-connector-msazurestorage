@@ -16,8 +16,8 @@
    under the License.
 -->
 <template xmlns="http://ws.apache.org/ns/synapse" name="listMetadata">
-    <parameter defaultValue="" isMandatory="false" name="containerName"/>
-    <parameter defaultValue="" isMandatory="false" name="fileName"/>
+    <parameter defaultValue="" isMandatory="true" name="containerName"/>
+    <parameter defaultValue="" isMandatory="true" name="fileName"/>
     <sequence>
         <property expression="$func:containerName" name="containerName" scope="default" type="STRING"/>
         <property expression="$func:fileName" name="fileName" scope="default" type="STRING"/>
