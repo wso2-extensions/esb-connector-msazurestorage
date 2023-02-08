@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.connector.azure.storage.util;
 
+import com.sun.crypto.provider.DESCipher;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.core.ConnectException;
 
@@ -38,5 +39,12 @@ public class AzureUtil {
         return AzureConstants.PROTOCOL_KEY_PARAM + protocol + AzureConstants.SEMICOLON +
                AzureConstants.ACCOUNT_NAME_PARAM + accountName + AzureConstants.SEMICOLON
                + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
+    }
+
+    public static String generateResultPayload(boolean status, String description) {
+        if (status) {
+            return AzureConstants.START_TAG + true + AzureConstants.END_TAG;
+        }
+        return AzureConstants.START_TAG_ERROR + description + AzureConstants.END_TAG_ERROR;
     }
 }

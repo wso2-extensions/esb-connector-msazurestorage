@@ -48,16 +48,23 @@ public class BlobEraser extends AbstractConnector {
         if (containerName == null || fileName == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
-        boolean resultStatus = false;
-
+        String status = AzureConstants.ERR_UNKNOWN_ERROR_OCCURRED;
         try {
             String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
             CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            CloudBlockBlob blob = container.getBlockBlobReference((String) fileName);
-            blob.delete(DeleteSnapshotsOption.NONE, null, null, null);
-            resultStatus = true;
+            if (container.exists()) {
+                CloudBlockBlob blob = container.getBlockBlobReference((String) fileName);
+                if (blob.exists()) {
+                    blob.delete(DeleteSnapshotsOption.NONE, null, null, null);
+                    status = AzureConstants.STATUS_SUCCESS;
+                } else {
+                    status = AzureConstants.ERR_BLOB_DOES_NOT_EXIST;
+                }
+            } else {
+                status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;
+            }
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
@@ -67,24 +74,23 @@ public class BlobEraser extends AbstractConnector {
         } catch (ConnectException e) {
             handleException("Unexpected error occurred. ", e, messageContext);
         }
-        generateResults(messageContext, resultStatus);
+        generateResults(messageContext, status);
     }
 
     /**
      * Generate the result.
      *
      * @param messageContext The message context that is processed by a handler in the handle method.
-     * @param resultStatus   Result of the status (true/false).
+     * @param status   Result of the status.
      */
-    private void generateResults(MessageContext messageContext, boolean resultStatus) {
-        String response = AzureConstants.START_TAG + resultStatus + AzureConstants.END_TAG;
+    private void generateResults(MessageContext messageContext, String status) {
+        String response = AzureUtil.generateResultPayload(AzureConstants.STATUS_SUCCESS.equals(status), status);
         OMElement element = null;
         try {
             element = ResultPayloadCreator.performSearchMessages(response);
         } catch (XMLStreamException e) {
             handleException("Unable to build the message.", e, messageContext);
         }
-
         ResultPayloadCreator.preparePayload(messageContext, element);
     }
 }

@@ -21,12 +21,14 @@
     <parameter isMandatory="false" name="textContent" description="Text content to be uploaded (without using a file)."/>
     <parameter name="fileName" description="The name of the file."/>
     <parameter name="blobContentType" description="The Content-type of the file to be uploaded"/>
+    <parameter isMandatory="false" name="metadata" description="The metadata of the blob." />
     <sequence>
         <property name="containerName" expression="$func:containerName"/>
         <property name="filePath" expression="$func:filePath"/>
         <property name="textContent" expression="$func:textContent"/>
         <property name="fileName" expression="$func:fileName"/>
         <property name="blobContentType" expression="$func:blobContentType"/>
+        <property name="metadata" expression="$func:metadata"/>
         <class name="org.wso2.carbon.connector.azure.storage.BlobUploader"/>
     </sequence>
 </template>
