@@ -19,7 +19,9 @@ This section provides more information on each of the operations.
 
 #### Uploads a blob file into the storage
 
-The uploadBlob operation uploads a Blob file into the storage.
+The uploadBlob operation uploads a Blob file into the storage. 
+
+##### To upload a file as a blob
 
 **uploadBlob**
 ```xml
@@ -28,6 +30,7 @@ The uploadBlob operation uploads a Blob file into the storage.
     <fileName>{$ctx:fileName}</fileName>
     <filePath>{$ctx:filePath}</filePath>
     <blobContentType>{$ctx:fileContentType}</blobContentType> 
+    <metadata>{$ctx:metadata}</metadata>
 </msazurestorage.uploadBlob>
 ```
 
@@ -36,6 +39,7 @@ The uploadBlob operation uploads a Blob file into the storage.
 * fileName: The name of the file.
 * filePath: The path to a local file to be uploaded.
 * blobContentType: The Content-type of the file to be uploaded
+* metadata: A JSON formatted metadata string (optional) (ex: `{"meta1": "val1", "meta2": 2, "meta3": "val3"}`)
 
 **Sample request**
 
@@ -47,7 +51,44 @@ Given below is a sample request for the uploadBlob operation.
   "accountKey": "=gCetnaQlvsXQG4PnlXxxxxXXXXsW37DsDKw5rnCg==",
   "containerName": "sales",
   "fileName": "sample.txt",
-  "filePath": "/home/user/Pictures/a.txt"
+  "filePath": "/home/user/Pictures/a.txt",
+  "metadata": "{'meta1': 'val1', 'meta2': 'val2'}"
+}
+```
+
+##### To upload a text content as a blob
+
+**uploadBlob**
+```xml
+<msazurestorage.uploadBlob>
+    <containerName>{$ctx:containerName}</containerName>
+    <fileName>{$ctx:fileName}</fileName>
+    <textContent>{$ctx:payload}</textContent>
+    <blobContentType>{$ctx:fileContentType}</blobContentType> 
+    <metadata>{$ctx:metadata}</metadata>
+</msazurestorage.uploadBlob>
+```
+
+**Properties**
+* containerName: The name of the container.
+* fileName: The name of the file.
+* textContent: The text content to be upload as a blob.
+* blobContentType: The Content-type of the file to be uploaded
+* metadata: A JSON formatted metadata string (optional) (ex: `{"meta1": "val1", "meta2": 2, "meta3": "val3"}`)
+
+**Sample request**
+
+Given below is a sample request for the uploadBlob operation.
+
+```json
+{
+  "accountName": "test",
+  "accountKey": "=gCetnaQlvsXQG4PnlXxxxxXXXXsW37DsDKw5rnCg==",
+  "containerName": "sales",
+  "fileName": "sample.txt",
+  "textContent": "Hello, world",
+  "blobContentType": "text/plain",
+  "metadata": "{'meta1': 'val1', 'meta2': 'val2'}"
 }
 ```
 
