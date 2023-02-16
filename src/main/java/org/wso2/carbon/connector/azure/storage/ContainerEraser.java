@@ -44,15 +44,13 @@ public class ContainerEraser extends AbstractConnector {
         if (containerName == null) {
             handleException("Mandatory parameters cannot be empty.", messageContext);
         }
-
-        boolean resultStatus = false;
-
+        boolean status = false;
         try {
             String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
             CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            resultStatus = container.deleteIfExists();
+            status = container.deleteIfExists();
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
@@ -62,17 +60,18 @@ public class ContainerEraser extends AbstractConnector {
         } catch (ConnectException e) {
             handleException("Unexpected error occurred. ", e, messageContext);
         }
-        generateResults(messageContext, resultStatus);
+        generateResults(messageContext, status);
     }
 
     /**
      * Generate the result
      *
      * @param messageContext The message context that is processed by a handler in the handle method
-     * @param resultStatus   Result of the status (true/false)
+     * @param status   Result of the status (true/false)
      */
-    private void generateResults(MessageContext messageContext, boolean resultStatus) {
-        String response = AzureConstants.START_TAG + resultStatus + AzureConstants.END_TAG;
+    private void generateResults(MessageContext messageContext, boolean status) {
+        String response = AzureUtil
+                .generateResultPayload(status, !status ? AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST : "");
         OMElement element = null;
         try {
             element = ResultPayloadCreator.performSearchMessages(response);

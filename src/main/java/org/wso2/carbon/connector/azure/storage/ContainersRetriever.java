@@ -41,7 +41,6 @@ import org.wso2.carbon.connector.core.ConnectException;
 public class ContainersRetriever extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
         OMElement result = factory.createOMElement(AzureConstants.RESULT, ns);

@@ -27,13 +27,13 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
-import org.json.JSONObject;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
 
+import javax.xml.stream.XMLStreamException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.HashMap;
@@ -64,17 +64,24 @@ public class ListMetadata extends AbstractConnector {
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
             CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            CloudBlob blob = container.getBlobReferenceFromServer(fileName);
-            blob.downloadAttributes();
-            HashMap<String, String> blobMetadata  = blob.getMetadata();
-
-            for (Map.Entry<String, String> entry : blobMetadata.entrySet()) {
-                outputResult = entry.getValue();
-                OMElement messageElement = factory.createOMElement(entry.getKey(), ns);
-                messageElement.setText(outputResult);
-                metadataElement.addChild(messageElement);
+            if (container.exists()) {
+                CloudBlob blob = container.getBlockBlobReference(fileName);
+                if (blob.exists()) {
+                    blob.downloadAttributes();
+                    HashMap<String, String> blobMetadata  = blob.getMetadata();
+                    for (Map.Entry<String, String> entry : blobMetadata.entrySet()) {
+                        outputResult = entry.getValue();
+                        OMElement messageElement = factory.createOMElement(entry.getKey(), ns);
+                        messageElement.setText(outputResult);
+                        metadataElement.addChild(messageElement);
+                        result.addChild(metadataElement);
+                    }
+                } else {
+                    generateResults(messageContext, AzureConstants.ERR_BLOB_DOES_NOT_EXIST);
+                }
+            } else {
+                generateResults(messageContext, AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST);
             }
-
         } catch (URISyntaxException e) {
             handleException("Invalid input URL found.", e, messageContext);
         } catch (InvalidKeyException e) {
@@ -88,5 +95,22 @@ public class ListMetadata extends AbstractConnector {
             handleException("Unexpected error occurred. ", e, messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
+    }
+
+    /**
+     * Generate the result
+     *
+     * @param messageContext The message context that is processed by a handler in the handle method
+     * @param status   Result of the status (true/false)
+     */
+    private void generateResults(MessageContext messageContext, String status) {
+        String response = AzureUtil.generateResultPayload(false, status);
+        OMElement element = null;
+        try {
+            element = ResultPayloadCreator.performSearchMessages(response);
+        } catch (XMLStreamException e) {
+            handleException("Unable to build the message.", e, messageContext);
+        }
+        ResultPayloadCreator.preparePayload(messageContext, element);
     }
 }

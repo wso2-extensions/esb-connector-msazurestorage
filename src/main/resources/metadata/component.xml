@@ -22,5 +22,9 @@
             <file>listMetadata.xml</file>
             <description>Downloads the metadata from the  blob from Azure storage.</description>
         </component>
+        <component name="uploadMetadata">
+            <file>uploadMetadata.xml</file>
+            <description>Uploads metadata to a blob in Azure storage.</description>
+        </component>
     </subComponents>
 </component>

@@ -40,11 +40,18 @@ public class AzureConstants {
     public static final String BLOB = "blob";
     public static final String CONTAINER = "container";
     public static final String RESULT = "result";
-    public static final String START_TAG = "<result><success>";
-    public static final String END_TAG = "</success></result>";
+    public static final String START_TAG = "<jsonObject><result><success>";
+    public static final String END_TAG = "</success></result></jsonObject>";
     public static final String EMPTY_RESULT_TAG = "<result></></result>";
 
     public static final String METADATA = "metadata";
+    public static final String START_TAG_ERROR = "<jsonObject><result><success>false</success><description>";
+    public static final String END_TAG_ERROR = "</description></result></jsonObject>";
+    public static final String ERR_CONTAINER_ALREADY_EXISTS = "CONTAINER_ALREADY_EXISTS";
+    public static final String ERR_CONTAINER_DOES_NOT_EXIST = "CONTAINER_DOES_NOT_EXIST";
+    public static final String ERR_UNKNOWN_ERROR_OCCURRED = "UNKNOWN_ERROR_OCCURRED";
+    public static final String STATUS_SUCCESS = "SUCCESS";
+    public static final String ERR_BLOB_DOES_NOT_EXIST = "BLOB_DOES_NOT_EXIST";
 
     private AzureConstants() {
     }

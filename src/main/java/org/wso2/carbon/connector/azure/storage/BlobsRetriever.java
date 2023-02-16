@@ -22,6 +22,8 @@ import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
+import org.apache.synapse.core.axis2.Axis2MessageContext;
+import org.apache.synapse.transport.passthru.PassThroughConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
@@ -38,6 +40,8 @@ import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import org.wso2.carbon.connector.core.ConnectException;
+
+import javax.xml.stream.XMLStreamException;
 
 /**
  * This class for performing list blobs operation.
@@ -60,6 +64,12 @@ public class BlobsRetriever extends AbstractConnector {
             CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
             CloudBlobClient serviceClient = account.createCloudBlobClient();
             CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
+
+            if (!container.exists()) {
+                generateErrorPayload(messageContext);
+                return;
+            }
+
             for (ListBlobItem blob : container.listBlobs()) {
                 if (blob instanceof CloudBlob) {
                     outputResult = blob.getUri().toString();
@@ -81,5 +91,21 @@ public class BlobsRetriever extends AbstractConnector {
             handleException("Unexpected error occurred. ", e, messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
+    }
+
+    /**
+     * Generate error payload when the container does not exist
+     *
+     * @param messageContext The message context that is processed by a handler in the handle method
+     */
+    private void generateErrorPayload(MessageContext messageContext) {
+        String response = AzureUtil.generateResultPayload(false, AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST);
+        OMElement element = null;
+        try {
+            element = ResultPayloadCreator.performSearchMessages(response);
+        } catch (XMLStreamException e) {
+            handleException("Unable to build the message.", e, messageContext);
+        }
+        ResultPayloadCreator.preparePayload(messageContext, element);
     }
 }

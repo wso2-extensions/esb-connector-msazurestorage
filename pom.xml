@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.connector</groupId>
     <artifactId>org.wso2.carbon.connector.msazurestorage</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <packaging>jar</packaging>
     <name>WSO2 Carbon - Connector For Microsoft Azure Storage</name>
     <url>http://wso2.org</url>
@@ -45,6 +45,7 @@
         <rampart.wso2.version>1.6.1.wso2v18</rampart.wso2.version>
         <azure.version>6.1.0</azure.version>
         <skip-tests>true</skip-tests>
+        <gson.version>2.10.1</gson.version>
     </properties>
 
     <dependencies>
@@ -204,6 +205,11 @@
             <groupId>org.apache.synapse</groupId>
             <artifactId>synapse-nhttp-transport</artifactId>
             <version>${synapse.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
         </dependency>
     </dependencies>
     <scm>
