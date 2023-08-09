@@ -21,8 +21,13 @@ package org.wso2.carbon.connector.azure.storage.util;
  * This class contains the azure connector specific constants.
  */
 public class AzureConstants {
-    public static final String ACCOUNT_NAME = "azureAccountName";
-    public static final String ACCOUNT_KEY = "azureAccountKey";
+    public static final String CONNECTOR_NAME = "azurestorage";
+    public static final String CONNECTION_NAME = "connectionName";
+    public static final String ACCOUNT_NAME = "accountName";
+    public static final String CLIENT_ID = "clientId";
+    public static final String CLIENT_SECRET = "clientSecret";
+    public static final String TENANT_ID = "tenantId";
+    public static final String ACCOUNT_KEY = "accountKey";
     public static final String PROTOCOL = "defaultEndpointsProtocol";
     public static final String DEFAULT_PROTOCOL = "http";
     public static final String CONTAINER_NAME = "containerName";
@@ -52,6 +57,11 @@ public class AzureConstants {
     public static final String ERR_UNKNOWN_ERROR_OCCURRED = "UNKNOWN_ERROR_OCCURRED";
     public static final String STATUS_SUCCESS = "SUCCESS";
     public static final String ERR_BLOB_DOES_NOT_EXIST = "BLOB_DOES_NOT_EXIST";
+    public static final String BLOB_ENDPOINT_SUFFIX = ".blob.core.windows.net";
+    public static final String HTTPS_PROTOCOL = "https://";
+    public static final String PROPERTY_ERROR_CODE = "ERROR_CODE";
+    public static final String PROPERTY_ERROR_MESSAGE = "ERROR_MESSAGE";
+    public static final String STATUS_CODE = "HTTP_SC";
 
     private AzureConstants() {
     }

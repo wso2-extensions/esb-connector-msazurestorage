@@ -17,28 +17,22 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlob;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
 import org.apache.axiom.om.OMNamespace;
 import org.apache.synapse.MessageContext;
+import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
-import org.wso2.carbon.connector.core.ConnectException;
+import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
 import javax.xml.stream.XMLStreamException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 /**
  * This class for getting the metadata from the blob
@@ -46,12 +40,13 @@ import java.util.NoSuchElementException;
 public class ListMetadata extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
-        String fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
+        Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
         if (containerName == null || fileName == null) {
-            handleException("Mandatory parameters cannot be empty.", messageContext);
+            handleException("Mandatory parameters [containerName] and [fileName] cannot be empty.", messageContext);
         }
-        String outputResult;
+        ConnectionHandler handler = ConnectionHandler.getConnectionHandler();
 
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
@@ -59,40 +54,30 @@ public class ListMetadata extends AbstractConnector {
         ResultPayloadCreator.preparePayload(messageContext, result);
         OMElement metadataElement = factory.createOMElement(AzureConstants.METADATA, ns);
         result.addChild(metadataElement);
+
         try {
-            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
-            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-            CloudBlobClient serviceClient = account.createCloudBlobClient();
-            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            if (container.exists()) {
-                CloudBlob blob = container.getBlockBlobReference(fileName);
-                if (blob.exists()) {
-                    blob.downloadAttributes();
-                    HashMap<String, String> blobMetadata  = blob.getMetadata();
-                    for (Map.Entry<String, String> entry : blobMetadata.entrySet()) {
-                        outputResult = entry.getValue();
-                        OMElement messageElement = factory.createOMElement(entry.getKey(), ns);
-                        messageElement.setText(outputResult);
+            String connectionName = AzureUtil.getConnectionName(messageContext);
+            AzureStorageConnectionHandler azureStorageConnectionHandler = (AzureStorageConnectionHandler)
+                    handler.getConnection(AzureConstants.CONNECTOR_NAME, connectionName);
+            BlobServiceClient blobServiceClient = azureStorageConnectionHandler.getBlobServiceClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName.toString());
+            if (containerClient.exists()) {
+                BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
+                if (blobClient.exists()) {
+                    blobClient.getProperties().getMetadata().forEach((key, value) -> {
+                        OMElement messageElement = factory.createOMElement(key, ns);
+                        messageElement.setText(value);
                         metadataElement.addChild(messageElement);
                         result.addChild(metadataElement);
-                    }
+                    });
                 } else {
                     generateResults(messageContext, AzureConstants.ERR_BLOB_DOES_NOT_EXIST);
                 }
             } else {
                 generateResults(messageContext, AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST);
             }
-        } catch (URISyntaxException e) {
-            handleException("Invalid input URL found.", e, messageContext);
-        } catch (InvalidKeyException e) {
-            handleException("Invalid account key found.", e, messageContext);
-        } catch (StorageException e) {
-            handleException("Error occurred while connecting to the storage.", e, messageContext);
-        } catch (NoSuchElementException e) {
-            // No such element exception can be occurred due to server authentication failure.
-            handleException("Error occurred while listing the container", e, messageContext);
-        } catch (ConnectException e) {
-            handleException("Unexpected error occurred. ", e, messageContext);
+        } catch (Exception e) {
+            handleException("Error occurred: " + e.getMessage(), messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
     }

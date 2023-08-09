@@ -17,22 +17,18 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
 import org.apache.axiom.om.OMElement;
 import org.apache.synapse.MessageContext;
-import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
-import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
 import javax.xml.stream.XMLStreamException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class for performing create container operation.
@@ -42,23 +38,20 @@ public class ContainerCreator extends AbstractConnector {
     public void connect(MessageContext messageContext) {
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
         if (containerName == null) {
-            handleException("Mandatory parameters cannot be empty.", messageContext);
+            handleException("Mandatory parameter [containerName] cannot be empty.", messageContext);
         }
+        ConnectionHandler handler = ConnectionHandler.getConnectionHandler();
         boolean status = false;
+
         try {
-            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
-            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-            CloudBlobClient blobClient = account.createCloudBlobClient();
-            CloudBlobContainer container = blobClient.getContainerReference((String) containerName);
-            status = container.createIfNotExists();
-        } catch (URISyntaxException e) {
-            handleException("Invalid input URL found.", e, messageContext);
-        } catch (InvalidKeyException e) {
-            handleException("Invalid account key found.", e, messageContext);
-        } catch (StorageException e) {
-            handleException("Error occurred while connecting to the storage.", e, messageContext);
-        } catch (ConnectException e) {
-            handleException("Unexpected error occurred. ", e, messageContext);
+            String connectionName = AzureUtil.getConnectionName(messageContext);
+            AzureStorageConnectionHandler azureStorageConnectionHandler = (AzureStorageConnectionHandler)
+                    handler.getConnection(AzureConstants.CONNECTOR_NAME, connectionName);
+            BlobServiceClient blobServiceClient = azureStorageConnectionHandler.getBlobServiceClient();
+            BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containerName.toString());
+            status = blobContainerClient.createIfNotExists();
+        } catch (Exception e) {
+            handleException("Error occurred: " + e.getMessage(), messageContext);
         }
         generateResults(messageContext, status);
     }

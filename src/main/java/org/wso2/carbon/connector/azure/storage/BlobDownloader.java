@@ -17,11 +17,9 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
@@ -29,19 +27,17 @@ import org.apache.axiom.om.OMNamespace;
 import org.apache.axis2.builder.Builder;
 import org.apache.axis2.builder.BuilderUtil;
 import org.apache.axis2.transport.TransportUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.synapse.MessageContext;
 import org.apache.synapse.commons.json.JsonUtil;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
+import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
-import org.wso2.carbon.connector.core.ConnectException;
+import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.util.NoSuchElementException;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 import javax.xml.stream.XMLStreamException;
@@ -53,10 +49,10 @@ public class BlobDownloader extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
-        String fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
+        Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
 
         if (containerName == null || fileName == null) {
-            handleException("Mandatory parameters cannot be empty.", messageContext);
+            handleException("Mandatory parameters [containerName] and [fileName] cannot be empty.", messageContext);
         }
         OMFactory factory = OMAbstractFactory.getOMFactory();
         OMNamespace ns = factory.createOMNamespace(AzureConstants.AZURE_NAMESPACE, AzureConstants.NAMESPACE);
@@ -64,27 +60,27 @@ public class BlobDownloader extends AbstractConnector {
         ResultPayloadCreator.preparePayload(messageContext, result);
         org.apache.axis2.context.MessageContext axis2MessageContext =
                 ((Axis2MessageContext) messageContext).getAxis2MessageContext();
+        ConnectionHandler handler = ConnectionHandler.getConnectionHandler();
         try {
-            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
-            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-            CloudBlobClient serviceClient = account.createCloudBlobClient();
-
-            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            if (container.exists()) {
-                CloudBlockBlob blob = container.getBlockBlobReference(fileName);
-                if (blob.exists()) {
-                    FileDataSource fileDataSource = new FileDataSource(fileName);
-                    DataHandler handler = new DataHandler(fileDataSource);
-                    blob.download(handler.getOutputStream());
-
-                    String contentType = blob.getProperties().getContentType();
+            String connectionName = AzureUtil.getConnectionName(messageContext);
+            AzureStorageConnectionHandler azureStorageConnectionHandler = (AzureStorageConnectionHandler)
+                    handler.getConnection(AzureConstants.CONNECTOR_NAME, connectionName);
+            BlobServiceClient blobServiceClient = azureStorageConnectionHandler.getBlobServiceClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName.toString());
+            if (containerClient.exists()) {
+                BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
+                if (blobClient.exists()) {
+                    FileDataSource fileDataSource = new FileDataSource(fileName.toString());
+                    DataHandler dataHandler = new DataHandler(fileDataSource);
+                    blobClient.downloadStream(dataHandler.getOutputStream());
+                    String contentType = blobClient.getProperties().getContentType();
                     Builder builder = BuilderUtil.getBuilderFromSelector(contentType, axis2MessageContext);
 
                     JsonUtil.removeJsonPayload(axis2MessageContext);
-                    OMElement fileElement = builder.processDocument(handler.getInputStream(), contentType,
+                    OMElement fileElement = builder.processDocument(dataHandler.getInputStream(), contentType,
                             axis2MessageContext);
                     messageContext.setEnvelope(TransportUtils.createSOAPEnvelope(fileElement));
-                    if (contentType != null && !"".equals(contentType)) {
+                    if (StringUtils.isNotEmpty(contentType)) {
                         axis2MessageContext.setProperty("ContentType", contentType);
                     }
                 } else {
@@ -93,19 +89,8 @@ public class BlobDownloader extends AbstractConnector {
             } else {
                 generateResults(messageContext, AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST);
             }
-        } catch (URISyntaxException e) {
-            handleException("Invalid input URL found.", e, messageContext);
-        } catch (InvalidKeyException e) {
-            handleException("Invalid account key found.", e, messageContext);
-        } catch (StorageException e) {
-            handleException("Error occurred while connecting to the storage.", e, messageContext);
-        } catch (NoSuchElementException e) {
-            // No such element exception can be occurred due to server authentication failure.
-            handleException("Error occurred while listing the container", e, messageContext);
-        } catch (ConnectException e) {
-            handleException("Unexpected error occurred.", e, messageContext);
-        } catch (IOException e) {
-            handleException("Error while building the response.", e, messageContext);
+        } catch (Exception e) {
+            handleException("Error occurred: " + e.getMessage(), messageContext);
         }
     }
 

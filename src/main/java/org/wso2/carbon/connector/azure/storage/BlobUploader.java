@@ -17,32 +17,25 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
+import com.azure.core.util.BinaryData;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.google.gson.Gson;
 import org.apache.axiom.om.OMElement;
+import org.apache.commons.lang.StringUtils;
 import org.apache.synapse.MessageContext;
-import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
-import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.security.InvalidKeyException;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import org.wso2.carbon.connector.core.ConnectException;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * This class for performing upload blob operation.
@@ -50,6 +43,7 @@ import org.wso2.carbon.connector.core.ConnectException;
 public class BlobUploader extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
         Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
         Object filePath = messageContext.getProperty(AzureConstants.FILE_PATH);
@@ -58,22 +52,29 @@ public class BlobUploader extends AbstractConnector {
         Object metadata = messageContext.getProperty(AzureConstants.METADATA);
 
         if (containerName == null || fileName == null || ((filePath == null) && (textContent == null))) {
-            handleException("Mandatory parameters cannot be empty.", messageContext);
+            handleException("Mandatory parameters [containerName], [fileName] and [filePath] or [textContent] cannot be empty.",
+                    messageContext);
         }
 
         String status = AzureConstants.ERR_UNKNOWN_ERROR_OCCURRED;
-        FileInputStream fileInputStream = null;
+        ConnectionHandler handler = ConnectionHandler.getConnectionHandler();
         try {
-            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
-            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-            CloudBlobClient serviceClient = account.createCloudBlobClient();
-            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            if (container.exists()) {
-                CloudBlockBlob blob = container.getBlockBlobReference((String) fileName);
+            String connectionName = AzureUtil.getConnectionName(messageContext);
+            AzureStorageConnectionHandler azureStorageConnectionHandler = (AzureStorageConnectionHandler)
+                    handler.getConnection(AzureConstants.CONNECTOR_NAME, connectionName);
+            BlobServiceClient blobServiceClient = azureStorageConnectionHandler.getBlobServiceClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName.toString());
+            if (containerClient.exists()) {
+                BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
+                // Set blob content
+                if (filePath != null) {
+                    blobClient.uploadFromFile(filePath.toString());
+                } else {
+                    blobClient.upload(BinaryData.fromString(textContent.toString()));
+                }
                 // Set blob content type
                 if (contentType != null) {
-                    String blobContentType = (String) contentType;
-                    blob.getProperties().setContentType(blobContentType);
+                    blobClient.setHttpHeaders(new BlobHttpHeaders().setContentType(contentType.toString()));
                 }
                 // Set blob metadata
                 if (metadata != null && !"".equals(metadata)) {
@@ -81,67 +82,20 @@ public class BlobUploader extends AbstractConnector {
                     Gson gson = new Gson();
                     Map<String, String> map = gson.fromJson((String) metadata, Map.class);
                     for (Map.Entry<String, String> entry : map.entrySet()) {
-                        if (entry.getValue() != null && !"".equals(entry.getValue())) {
+                        if (StringUtils.isNotEmpty(entry.getValue())) {
                             metadataMap.put(entry.getKey(), entry.getValue());
                         }
                     }
-                    blob.setMetadata(metadataMap);
-                }
-
-                // Set blob content
-                if (filePath != null) {
-                    File sourceFile = new File((String) filePath);
-                    fileInputStream = new FileInputStream(sourceFile);
-                    blob.upload(fileInputStream, sourceFile.length());
-                } else {
-                    // we are taking the payload from a property as text
-                    blob.uploadText((String) textContent);
+                    blobClient.setMetadata(metadataMap);
                 }
                 status = AzureConstants.STATUS_SUCCESS;
             } else {
                 status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;
             }
-        } catch (URISyntaxException e) {
-            handleException("Invalid input URL found.", e, messageContext);
-        } catch (InvalidKeyException e) {
-            handleException("Invalid account key found.", e, messageContext);
-        } catch (StorageException e) {
-            handleException("Error occurred while connecting to the storage.", e, messageContext);
-        } catch (IOException e) {
-            handleException("Error occurred while uploading the file.", e, messageContext);
-        } catch (ConnectException e) {
-            handleException("Unexpected error occurred. ", e, messageContext);
-        }
-        finally {
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (IOException e) {
-                    log.error("Error occurred while closing the file input stream.");
-                }
-            }
+        } catch (Exception e) {
+            handleException("Error occurred: " + e.getMessage(), messageContext);
         }
         generateResults(messageContext, status);
-    }
-
-    /**
-     * Converts query string like metadata string into a map.
-     *
-     * @param metadata A query string like metadata string
-     * @return A map containing all the metadata
-     * @throws UnsupportedEncodingException
-     */
-    private HashMap<String, String> buildMetadataMap(String metadata) throws UnsupportedEncodingException {
-        HashMap<String, String> metadataMap = new HashMap<>();
-        if (metadata != null && !metadata.isEmpty()) {
-            String[] pairs = metadata.split("&");
-            for (String pair : pairs) {
-                int idx = pair.indexOf("=");
-                metadataMap.put(URLDecoder.decode(pair.substring(0, idx), Charset.defaultCharset().toString()),
-                        URLDecoder.decode(pair.substring(idx + 1), Charset.defaultCharset().toString()));
-            }
-        }
-        return metadataMap;
     }
 
     /**

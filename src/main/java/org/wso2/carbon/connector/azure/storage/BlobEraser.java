@@ -17,24 +17,21 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
+import com.azure.core.http.rest.Response;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.models.DeleteSnapshotsOptionType;
 import org.apache.axiom.om.OMElement;
 import org.apache.synapse.MessageContext;
-import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
-import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
+import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
+import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
 import javax.xml.stream.XMLStreamException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import com.microsoft.azure.storage.blob.DeleteSnapshotsOption;
-import org.wso2.carbon.connector.core.ConnectException;
 
 /**
  * This class for performing delete blob operation.
@@ -42,37 +39,35 @@ import org.wso2.carbon.connector.core.ConnectException;
 public class BlobEraser extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
-        Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME).toString();
-        Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME).toString();
+        Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
+        Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
 
         if (containerName == null || fileName == null) {
-            handleException("Mandatory parameters cannot be empty.", messageContext);
+            handleException("Mandatory parameters [containerName] and [fileName] cannot be empty.", messageContext);
         }
+        ConnectionHandler handler = ConnectionHandler.getConnectionHandler();
         String status = AzureConstants.ERR_UNKNOWN_ERROR_OCCURRED;
         try {
-            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
-            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-            CloudBlobClient serviceClient = account.createCloudBlobClient();
-            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            if (container.exists()) {
-                CloudBlockBlob blob = container.getBlockBlobReference((String) fileName);
-                if (blob.exists()) {
-                    blob.delete(DeleteSnapshotsOption.NONE, null, null, null);
-                    status = AzureConstants.STATUS_SUCCESS;
-                } else {
+            String connectionName = AzureUtil.getConnectionName(messageContext);
+            AzureStorageConnectionHandler azureStorageConnectionHandler = (AzureStorageConnectionHandler)
+                    handler.getConnection(AzureConstants.CONNECTOR_NAME, connectionName);
+            BlobServiceClient blobServiceClient = azureStorageConnectionHandler.getBlobServiceClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName.toString());
+            if (containerClient.exists()) {
+                BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
+                Response<Boolean> response = blobClient.deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null,
+                null,
+                null);
+                if (response.getStatusCode() == 404) {
                     status = AzureConstants.ERR_BLOB_DOES_NOT_EXIST;
+                } else {
+                    status = AzureConstants.STATUS_SUCCESS;
                 }
             } else {
                 status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;
             }
-        } catch (URISyntaxException e) {
-            handleException("Invalid input URL found.", e, messageContext);
-        } catch (InvalidKeyException e) {
-            handleException("Invalid account key found.", e, messageContext);
-        } catch (StorageException e) {
-            handleException("Error occurred while connecting to the storage.", e, messageContext);
-        } catch (ConnectException e) {
-            handleException("Unexpected error occurred. ", e, messageContext);
+        } catch (Exception e) {
+            handleException("Error occurred: " + e.getMessage(), messageContext);
         }
         generateResults(messageContext, status);
     }
