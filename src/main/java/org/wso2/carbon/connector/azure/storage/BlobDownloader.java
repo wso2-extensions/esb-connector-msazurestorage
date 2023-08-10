@@ -34,6 +34,7 @@ import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
+import org.wso2.carbon.connector.azure.storage.util.Error;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
@@ -52,6 +53,8 @@ public class BlobDownloader extends AbstractConnector {
         Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
 
         if (containerName == null || fileName == null) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.BAD_REQUEST, "Mandatory " +
+                    "parameters [containerName] and [fileName] cannot be empty."));
             handleException("Mandatory parameters [containerName] and [fileName] cannot be empty.", messageContext);
         }
         OMFactory factory = OMAbstractFactory.getOMFactory();
@@ -90,6 +93,8 @@ public class BlobDownloader extends AbstractConnector {
                 generateResults(messageContext, AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST);
             }
         } catch (Exception e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
+                    e.getMessage()));
             handleException("Error occurred: " + e.getMessage(), messageContext);
         }
     }

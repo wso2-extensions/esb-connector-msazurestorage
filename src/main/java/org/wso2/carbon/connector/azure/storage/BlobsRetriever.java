@@ -28,6 +28,7 @@ import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
+import org.wso2.carbon.connector.azure.storage.util.Error;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
@@ -43,6 +44,8 @@ public class BlobsRetriever extends AbstractConnector {
 
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
         if (containerName == null) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.BAD_REQUEST, "Mandatory " +
+                    "parameter [containerName] cannot be empty."));
             handleException("Mandatory parameter [containerName] cannot be empty.", messageContext);
         }
         OMFactory factory = OMAbstractFactory.getOMFactory();
@@ -68,6 +71,8 @@ public class BlobsRetriever extends AbstractConnector {
                 generateErrorPayload(messageContext);
             }
         } catch (Exception e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
+                    e.getMessage()));
             handleException("Error occurred: " + e.getMessage(), messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);

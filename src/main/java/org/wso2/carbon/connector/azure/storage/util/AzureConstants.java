@@ -62,6 +62,8 @@ public class AzureConstants {
     public static final String PROPERTY_ERROR_CODE = "ERROR_CODE";
     public static final String PROPERTY_ERROR_MESSAGE = "ERROR_MESSAGE";
     public static final String STATUS_CODE = "HTTP_SC";
+    public static final String BAD_REQUEST = "400";
+    public static final String INTERNAL_SERVER_ERROR = "500";
 
     private AzureConstants() {
     }

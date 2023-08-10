@@ -29,6 +29,7 @@ import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
+import org.wso2.carbon.connector.azure.storage.util.Error;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
@@ -52,6 +53,8 @@ public class BlobUploader extends AbstractConnector {
         Object metadata = messageContext.getProperty(AzureConstants.METADATA);
 
         if (containerName == null || fileName == null || ((filePath == null) && (textContent == null))) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.BAD_REQUEST, "Mandatory " +
+                    "parameters [containerName], [fileName] and [filePath] or [textContent] cannot be empty."));
             handleException("Mandatory parameters [containerName], [fileName] and [filePath] or [textContent] cannot be empty.",
                     messageContext);
         }
@@ -93,6 +96,8 @@ public class BlobUploader extends AbstractConnector {
                 status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;
             }
         } catch (Exception e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
+                    e.getMessage()));
             handleException("Error occurred: " + e.getMessage(), messageContext);
         }
         generateResults(messageContext, status);

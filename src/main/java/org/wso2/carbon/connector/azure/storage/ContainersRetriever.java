@@ -26,6 +26,7 @@ import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
+import org.wso2.carbon.connector.azure.storage.util.Error;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
@@ -54,6 +55,8 @@ public class ContainersRetriever extends AbstractConnector {
             });
             messageContext.getEnvelope().getBody().addChild(result);
         } catch (Exception e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
+                    e.getMessage()));
             handleException("Error occurred: " + e.getMessage(), messageContext);
         }
         messageContext.getEnvelope().getBody().addChild(result);
