@@ -1,0 +1,105 @@
+{
+  "connectorName": "msazurestorage",
+  "operationName": "uploadBlob",
+  "title": "Upload Blob",
+  "help": "<h1>Upload Blob</h1> <b>This operation can be used to upload a blob.</b>",
+  "elements": [
+    {
+      "type": "attributeGroup",
+      "value": {
+        "groupName": "General",
+        "elements": [
+          {
+            "type": "attribute",
+            "value": {
+              "name": "configRef",
+              "displayName": "Connection",
+              "inputType": "connection",
+              "allowedConnectionTypes": [
+                "msazurestorage"
+              ],
+              "defaultType": "connection.msazurestorage",
+              "defaultValue": "",
+              "required": "true",
+              "helpTip": "Connection to be used"
+            }
+          },
+          {
+            "type": "attributeGroup",
+            "value": {
+              "groupName": "Basic",
+              "elements": [
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "containerName",
+                    "displayName": "Container name",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "true",
+                    "helpTip": "Name of the container."
+                  }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "fileName",
+                    "displayName": "Blob name",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "true",
+                    "helpTip": "Name of the Blob to be created."
+                  }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "blobContentType",
+                    "displayName": "Content Type",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "false",
+                    "helpTip": "Content Type of the Blob."
+                  }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "filePath",
+                    "displayName": "Local file Path",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "false",
+                    "helpTip": "The path of the file to be uploaded."
+                  }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "textContent",
+                    "displayName": "Text Content",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "false",
+                    "helpTip": "Text content to be uploaded (without using a file)."
+                  }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "metadata",
+                    "displayName": "Metadata",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "false",
+                    "helpTip": "Key value list of metadata."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
