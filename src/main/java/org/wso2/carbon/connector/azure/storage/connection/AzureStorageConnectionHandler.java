@@ -45,35 +45,8 @@ public class AzureStorageConnectionHandler implements Connection {
      */
     public BlobServiceClient getBlobServiceClient() throws ConnectException {
 
-        String clientId = this.connectionConfig.getClientID();
-        String clientSecret = this.connectionConfig.getClientSecret();
-        String tenantId = this.connectionConfig.getTenantID();
-        String accountName = this.connectionConfig.getAccountName();
-        String accountKey = this.connectionConfig.getAccountKey();
-        String endpointProtocol = this.connectionConfig.getEndpointProtocol();
-
         if (blobServiceClient == null) {
-            if (StringUtils.isNotEmpty(clientId) && StringUtils.isNotEmpty(clientSecret)
-                    && StringUtils.isNotEmpty(tenantId) && StringUtils.isNotEmpty(accountName)) {
-                ClientSecretCredential credential = new ClientSecretCredentialBuilder()
-                        .httpClient(new NettyAsyncHttpClientBuilder().build())
-                        .clientId(clientId)
-                        .clientSecret(clientSecret)
-                        .tenantId(tenantId)
-                        .build();
-                blobServiceClient = new BlobServiceClientBuilder()
-                        .httpClient(new NettyAsyncHttpClientBuilder().build())
-                        .credential(credential)
-                        .endpoint(AzureConstants.HTTPS_PROTOCOL + accountName + AzureConstants.BLOB_ENDPOINT_SUFFIX)
-                        .buildClient();
-            } else if (StringUtils.isNotEmpty(accountName) && StringUtils.isNotEmpty(accountKey)) {
-                blobServiceClient = new BlobServiceClientBuilder()
-                        .httpClient(new NettyAsyncHttpClientBuilder().build())
-                        .connectionString(AzureUtil.getStorageConnectionString(accountName, accountKey, endpointProtocol))
-                        .buildClient();
-            } else {
-                throw new InvalidConfigurationException("Missing authentication parameters.");
-            }
+            blobServiceClient = createNewBlobServiceClientInstance(this.connectionConfig);
         }
         return blobServiceClient;
     }
@@ -83,8 +56,41 @@ public class AzureStorageConnectionHandler implements Connection {
         return connectionConfig;
     }
 
-    public void setConnectionConfig(ConnectionConfiguration connectionConfig) {
+    public void setConnectionConfig(ConnectionConfiguration connectionConfig) throws InvalidConfigurationException {
 
         this.connectionConfig = connectionConfig;
+        blobServiceClient = createNewBlobServiceClientInstance(this.connectionConfig);
+    }
+
+    private BlobServiceClient createNewBlobServiceClientInstance(ConnectionConfiguration config) throws InvalidConfigurationException {
+
+        String clientId = config.getClientID();
+        String clientSecret = config.getClientSecret();
+        String tenantId = config.getTenantID();
+        String accountName = config.getAccountName();
+        String accountKey = config.getAccountKey();
+        String endpointProtocol = config.getEndpointProtocol();
+
+        if (StringUtils.isNotEmpty(clientId) && StringUtils.isNotEmpty(clientSecret)
+                && StringUtils.isNotEmpty(tenantId) && StringUtils.isNotEmpty(accountName)) {
+            ClientSecretCredential credential = new ClientSecretCredentialBuilder()
+                    .httpClient(new NettyAsyncHttpClientBuilder().build())
+                    .clientId(clientId)
+                    .clientSecret(clientSecret)
+                    .tenantId(tenantId)
+                    .build();
+            return new BlobServiceClientBuilder()
+                    .httpClient(new NettyAsyncHttpClientBuilder().build())
+                    .credential(credential)
+                    .endpoint(AzureConstants.HTTPS_PROTOCOL + accountName + AzureConstants.BLOB_ENDPOINT_SUFFIX)
+                    .buildClient();
+        } else if (StringUtils.isNotEmpty(accountName) && StringUtils.isNotEmpty(accountKey)) {
+            return new BlobServiceClientBuilder()
+                    .httpClient(new NettyAsyncHttpClientBuilder().build())
+                    .connectionString(AzureUtil.getStorageConnectionString(accountName, accountKey, endpointProtocol))
+                    .buildClient();
+        } else {
+            throw new InvalidConfigurationException("Missing authentication parameters.");
+        }
     }
 }

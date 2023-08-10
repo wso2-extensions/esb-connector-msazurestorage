@@ -21,6 +21,8 @@ package org.wso2.carbon.connector.azure.storage.connection;
 import org.apache.commons.lang3.StringUtils;
 import org.wso2.carbon.connector.azure.storage.exceptions.InvalidConfigurationException;
 
+import java.util.Objects;
+
 public class ConnectionConfiguration {
 
     private String connectionName;
@@ -103,5 +105,28 @@ public class ConnectionConfiguration {
     public void setEndpointProtocol(String endpointProtocol) {
 
         this.endpointProtocol = endpointProtocol;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj instanceof ConnectionConfiguration) {
+            ConnectionConfiguration connectionConfiguration = (ConnectionConfiguration) obj;
+            return StringUtils.equals(this.connectionName, connectionConfiguration.getConnectionName()) &&
+                    StringUtils.equals(this.accountName, connectionConfiguration.getAccountName()) &&
+                    StringUtils.equals(this.accountKey, connectionConfiguration.getAccountKey()) &&
+                    StringUtils.equals(this.clientID, connectionConfiguration.getClientID()) &&
+                    StringUtils.equals(this.clientSecret, connectionConfiguration.getClientSecret()) &&
+                    StringUtils.equals(this.tenantID, connectionConfiguration.getTenantID()) &&
+                    StringUtils.equals(this.endpointProtocol, connectionConfiguration.getEndpointProtocol());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(this.connectionName, this.accountName, this.accountKey, this.clientID, this.clientSecret,
+                this.tenantID, this.endpointProtocol);
     }
 }

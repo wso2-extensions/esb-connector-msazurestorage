@@ -56,15 +56,15 @@ public class AzureConfig extends AbstractConnector implements ManagedLifecycle {
             connectionName = configuration.getConnectionName();
 
             ConnectionHandler handler = ConnectionHandler.getConnectionHandler();
-            if (!handler.checkIfConnectionExists(connectorName, connectionName)) {
-                AzureStorageConnectionHandler azureStorageConnectionHandler = new AzureStorageConnectionHandler(configuration);
-                handler.createConnection(AzureConstants.CONNECTOR_NAME, connectionName, azureStorageConnectionHandler);
-            } else {
+            if (handler.checkIfConnectionExists(connectorName, connectionName)) {
                 AzureStorageConnectionHandler connectionHandler = (AzureStorageConnectionHandler) handler
                         .getConnection(connectorName, connectionName);
-                if (connectionHandler.getConnectionConfig() != configuration) {
+                if (!connectionHandler.getConnectionConfig().equals(configuration)) {
                     connectionHandler.setConnectionConfig(configuration);
                 }
+            } else {
+                AzureStorageConnectionHandler azureStorageConnectionHandler = new AzureStorageConnectionHandler(configuration);
+                handler.createConnection(AzureConstants.CONNECTOR_NAME, connectionName, azureStorageConnectionHandler);
             }
         } catch (InvalidConfigurationException e) {
             AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
