@@ -18,9 +18,11 @@
 <template name="downloadBlob" xmlns="http://ws.apache.org/ns/synapse">
     <parameter defaultValue="" isMandatory="false" name="containerName"/>
     <parameter defaultValue="" isMandatory="false" name="fileName"/>
+    <parameter defaultValue="" isMandatory="false" name="destinationFilePath"/>
     <sequence>
         <property expression="$func:containerName" name="containerName" scope="default" type="STRING"/>
         <property expression="$func:fileName" name="fileName" scope="default" type="STRING"/>
+        <property expression="$func:destinationFilePath" name="destinationFilePath" scope="default" type="STRING"/>
         <class name="org.wso2.carbon.connector.azure.storage.BlobDownloader"/>
     </sequence>
 </template>

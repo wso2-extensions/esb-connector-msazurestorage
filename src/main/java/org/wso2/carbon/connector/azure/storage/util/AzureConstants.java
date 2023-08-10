@@ -31,6 +31,7 @@ public class AzureConstants {
     public static final String PROTOCOL = "defaultEndpointsProtocol";
     public static final String DEFAULT_PROTOCOL = "http";
     public static final String CONTAINER_NAME = "containerName";
+    public static final String DESTINATION_FILE_PATH = "destinationFilePath";
     public static final String FILE_NAME = "fileName";
     public static final String FILE_PATH = "filePath";
     public static final String BLOB_CONTENT_TYPE = "blobContentType";
@@ -61,10 +62,10 @@ public class AzureConstants {
     public static final String HTTPS_PROTOCOL = "https://";
     public static final String PROPERTY_ERROR_CODE = "ERROR_CODE";
     public static final String PROPERTY_ERROR_MESSAGE = "ERROR_MESSAGE";
-    public static final String STATUS_CODE = "HTTP_SC";
-    public static final String BAD_REQUEST = "400";
-    public static final String INTERNAL_SERVER_ERROR = "500";
-
+    public static final String PROPERTY_ERROR_DETAIL = "ERROR_DETAIL";
+    public static final String BLOB_DOWNLOAD_FAILED = "BLOB_DOWNLOAD_FAILED";
+    public static final String BLOB_DOWNLOAD_SUCCESSFUL = "BLOB_DOWNLOAD_SUCCESSFUL";
+    public static final String ERROR_LOG_PREFIX = "Azure Storage connector encountered an error: ";
     private AzureConstants() {
     }
 }

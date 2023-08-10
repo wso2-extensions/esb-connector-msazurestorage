@@ -20,16 +20,20 @@ package org.wso2.carbon.connector.azure.storage;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.models.BlobStorageException;
 import com.google.gson.Gson;
+import com.microsoft.aad.msal4j.MsalException;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.synapse.MessageContext;
 import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
+import org.wso2.carbon.connector.azure.storage.exceptions.InvalidConfigurationException;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.Error;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.core.ConnectException;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
 import java.util.HashMap;
@@ -48,8 +52,8 @@ public class MetadataUploader extends AbstractConnector {
         Object metadata = messageContext.getProperty(AzureConstants.METADATA);
 
         if (containerName == null || fileName == null || metadata == null) {
-            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.BAD_REQUEST, "Mandatory " +
-                    "parameters [containerName], [fileName] and [metadata] cannot be empty."));
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.MISSING_PARAMETERS, "Mandatory " +
+                    "parameters [containerName], [fileName] and [metadata] cannot be empty.");
             handleException("Mandatory parameters [containerName], [fileName] and [metadata] cannot be empty.",
                     messageContext);
         }
@@ -81,10 +85,21 @@ public class MetadataUploader extends AbstractConnector {
             } else {
                 status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;
             }
+        } catch (InvalidConfigurationException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.INVALID_CONFIGURATION, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (ConnectException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.CONNECTION_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (MsalException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.AUTHENTICATION_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (BlobStorageException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.BLOB_STORAGE_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
         } catch (Exception e) {
-            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
-                    e.getMessage()));
-            handleException("Error occurred: " + e.getMessage(), messageContext);
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.GENERAL_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
         }
         generateResults(messageContext, status);
     }

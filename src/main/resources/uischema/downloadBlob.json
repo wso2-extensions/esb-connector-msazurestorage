@@ -50,6 +50,17 @@
                     "required": "true",
                     "helpTip": "Name of the Blob to be downloaded."
                   }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "destinationFilePath",
+                    "displayName": "Destination file path",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "false",
+                    "helpTip": "Local file path to download the blob."
+                  }
                 }
               ]
             }

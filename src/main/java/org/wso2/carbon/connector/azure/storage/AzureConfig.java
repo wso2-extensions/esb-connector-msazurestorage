@@ -67,8 +67,7 @@ public class AzureConfig extends AbstractConnector implements ManagedLifecycle {
                 handler.createConnection(AzureConstants.CONNECTOR_NAME, connectionName, azureStorageConnectionHandler);
             }
         } catch (InvalidConfigurationException e) {
-            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
-                    e.getMessage()));
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.INVALID_CONFIGURATION, e.getMessage());
             handleException("[" + connectionName + "] Failed to initiate Azure Storage connector configuration.", e,
                     messageContext);
         }

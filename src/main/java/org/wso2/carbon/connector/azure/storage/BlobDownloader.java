@@ -17,9 +17,13 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
+import com.azure.core.http.rest.Response;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.models.BlobProperties;
+import com.azure.storage.blob.models.BlobStorageException;
+import com.microsoft.aad.msal4j.MsalException;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
@@ -32,15 +36,18 @@ import org.apache.synapse.MessageContext;
 import org.apache.synapse.commons.json.JsonUtil;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
+import org.wso2.carbon.connector.azure.storage.exceptions.InvalidConfigurationException;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
 import org.wso2.carbon.connector.azure.storage.util.Error;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
+import org.wso2.carbon.connector.core.ConnectException;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -51,10 +58,11 @@ public class BlobDownloader extends AbstractConnector {
     public void connect(MessageContext messageContext) {
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
         Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
+        Object destinationFilePath = messageContext.getProperty(AzureConstants.DESTINATION_FILE_PATH);
 
         if (containerName == null || fileName == null) {
-            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.BAD_REQUEST, "Mandatory " +
-                    "parameters [containerName] and [fileName] cannot be empty."));
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.MISSING_PARAMETERS, "Mandatory " +
+                    "parameters [containerName] and [fileName] cannot be empty.");
             handleException("Mandatory parameters [containerName] and [fileName] cannot be empty.", messageContext);
         }
         OMFactory factory = OMAbstractFactory.getOMFactory();
@@ -73,29 +81,59 @@ public class BlobDownloader extends AbstractConnector {
             if (containerClient.exists()) {
                 BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
                 if (blobClient.exists()) {
-                    FileDataSource fileDataSource = new FileDataSource(fileName.toString());
-                    DataHandler dataHandler = new DataHandler(fileDataSource);
-                    blobClient.downloadStream(dataHandler.getOutputStream());
-                    String contentType = blobClient.getProperties().getContentType();
-                    Builder builder = BuilderUtil.getBuilderFromSelector(contentType, axis2MessageContext);
+                    if (destinationFilePath != null && StringUtils.isNotBlank(destinationFilePath.toString())) {
+                        Response<BlobProperties> downloadToFileResponse =
+                                blobClient.downloadToFileWithResponse(destinationFilePath.toString(), null, null, null, null,
+                                false, null, null);
+                        if (downloadToFileResponse.getStatusCode() == 206) {
+                            generateResults(messageContext, true, AzureConstants.BLOB_DOWNLOAD_SUCCESSFUL);
+                        } else {
+                            generateResults(messageContext, false, AzureConstants.BLOB_DOWNLOAD_FAILED);
+                        }
+                    } else {
+                        String contentType = blobClient.getProperties().getContentType();
+                        Builder builder = BuilderUtil.getBuilderFromSelector(contentType, axis2MessageContext);
 
-                    JsonUtil.removeJsonPayload(axis2MessageContext);
-                    OMElement fileElement = builder.processDocument(dataHandler.getInputStream(), contentType,
-                            axis2MessageContext);
-                    messageContext.setEnvelope(TransportUtils.createSOAPEnvelope(fileElement));
-                    if (StringUtils.isNotEmpty(contentType)) {
-                        axis2MessageContext.setProperty("ContentType", contentType);
+                        JsonUtil.removeJsonPayload(axis2MessageContext);
+                        OMElement fileElement = builder.processDocument(blobClient.downloadContentWithResponse(null,
+                                        null, null, null).getValue().toStream(), contentType,
+                                axis2MessageContext);
+                        messageContext.setEnvelope(TransportUtils.createSOAPEnvelope(fileElement));
+                        if (StringUtils.isNotEmpty(contentType)) {
+                            axis2MessageContext.setProperty("ContentType", contentType);
+                        }
                     }
                 } else {
-                    generateResults(messageContext, AzureConstants.ERR_BLOB_DOES_NOT_EXIST);
+                    generateResults(messageContext, false, AzureConstants.ERR_BLOB_DOES_NOT_EXIST);
                 }
             } else {
-                generateResults(messageContext, AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST);
+                generateResults(messageContext, false, AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST);
             }
+        } catch (UncheckedIOException e) {
+            Error error = Error.FILE_IO_ERROR;
+            if (e.getCause() instanceof FileAlreadyExistsException) {
+                error = Error.FILE_ALREADY_EXISTS_ERROR;
+            }
+            AzureUtil.setErrorPropertiesToMessage(messageContext, error, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (SecurityException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.FILE_PERMISSION_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (InvalidConfigurationException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.INVALID_CONFIGURATION, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (ConnectException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.CONNECTION_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (MsalException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.AUTHENTICATION_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (BlobStorageException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.BLOB_STORAGE_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
         } catch (Exception e) {
-            AzureUtil.setErrorPropertiesToMessage(messageContext, new Error(AzureConstants.INTERNAL_SERVER_ERROR,
-                    e.getMessage()));
-            handleException("Error occurred: " + e.getMessage(), messageContext);
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.GENERAL_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
         }
     }
 
@@ -105,8 +143,8 @@ public class BlobDownloader extends AbstractConnector {
      * @param messageContext The message context that is processed by a handler in the handle method
      * @param status   Result of the status (true/false)
      */
-    private void generateResults(MessageContext messageContext, String status) {
-        String response = AzureUtil.generateResultPayload(false, status);
+    private void generateResults(MessageContext messageContext, boolean status, String message) {
+        String response = AzureUtil.generateResultPayload(status, message);
         OMElement element = null;
         try {
             element = ResultPayloadCreator.performSearchMessages(response);

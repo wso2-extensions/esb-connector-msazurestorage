@@ -18,7 +18,17 @@
 
 package org.wso2.carbon.connector.azure.storage.util;
 
-public class Error {
+public enum Error {
+
+    CONNECTION_ERROR("700701", "MS_AZURE_BLOB:CONNECTION_ERROR"),
+    INVALID_CONFIGURATION("700702", "MS_AZURE_BLOB:INVALID_CONFIGURATION"),
+    MISSING_PARAMETERS("700703", "MS_AZURE_BLOB:MISSING_PARAMETERS"),
+    AUTHENTICATION_ERROR("700704", "MS_AZURE_BLOB:AUTHENTICATION_ERROR"),
+    FILE_ALREADY_EXISTS_ERROR("700705", "MS_AZURE_BLOB:FILE_ALREADY_EXISTS_ERROR"),
+    FILE_IO_ERROR("700706", "MS_AZURE_BLOB:FILE_IO_ERROR"),
+    BLOB_STORAGE_ERROR("700707", "MS_AZURE_BLOB:BLOB_STORAGE_ERROR"),
+    FILE_PERMISSION_ERROR("700708", "MS_AZURE_BLOB:FILE_PERMISSION_ERROR"),
+    GENERAL_ERROR("700709", "MS_AZURE_BLOB:GENERAL_ERROR");
 
     private final String code;
     private final String message;
@@ -29,7 +39,7 @@ public class Error {
      * @param code    error code represented by number
      * @param message error message
      */
-    public Error(String code, String message) {
+    Error(String code, String message) {
 
         this.code = code;
         this.message = message;
@@ -40,7 +50,7 @@ public class Error {
         return this.code;
     }
 
-    public String getErrorDetail() {
+    public String getErrorMessage() {
 
         return this.message;
     }

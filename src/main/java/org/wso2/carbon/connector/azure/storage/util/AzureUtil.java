@@ -18,7 +18,6 @@
 package org.wso2.carbon.connector.azure.storage.util;
 
 import org.apache.synapse.MessageContext;
-import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.wso2.carbon.connector.azure.storage.exceptions.InvalidConfigurationException;
 
 /**
@@ -60,12 +59,10 @@ public class AzureUtil {
      * @param messageContext Message Context
      * @param error          Error to be set
      */
-    public static void setErrorPropertiesToMessage(MessageContext messageContext, Error error) {
+    public static void setErrorPropertiesToMessage(MessageContext messageContext, Error error, String errorDetails) {
 
         messageContext.setProperty(AzureConstants.PROPERTY_ERROR_CODE, error.getErrorCode());
-        messageContext.setProperty(AzureConstants.PROPERTY_ERROR_MESSAGE, error.getErrorDetail());
-        Axis2MessageContext axis2smc = (Axis2MessageContext) messageContext;
-        org.apache.axis2.context.MessageContext axis2MessageCtx = axis2smc.getAxis2MessageContext();
-        axis2MessageCtx.setProperty(AzureConstants.STATUS_CODE, error.getErrorCode());
+        messageContext.setProperty(AzureConstants.PROPERTY_ERROR_MESSAGE, error.getErrorMessage());
+        messageContext.setProperty(AzureConstants.PROPERTY_ERROR_DETAIL, errorDetails);
     }
 }
