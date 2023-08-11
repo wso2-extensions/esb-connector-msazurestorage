@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.connector.azure.storage.util;
 
+/**
+ * Contains error codes and details related to Microsoft Azure storage connector.
+ */
 public enum Error {
 
     CONNECTION_ERROR("700701", "MS_AZURE_BLOB:CONNECTION_ERROR"),

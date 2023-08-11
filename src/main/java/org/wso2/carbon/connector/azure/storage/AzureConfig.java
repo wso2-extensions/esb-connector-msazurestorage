@@ -32,6 +32,9 @@ import org.wso2.carbon.connector.core.ConnectException;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 import org.wso2.carbon.connector.core.util.ConnectorUtils;
 
+/**
+ * This class is for reading connector init params and initializing AzureStorageConnectionHandler.
+ */
 public class AzureConfig extends AbstractConnector implements ManagedLifecycle {
 
     @Override
