@@ -22,7 +22,7 @@ package org.wso2.carbon.connector.azure.storage.util;
  */
 public class AzureConstants {
     public static final String CONNECTOR_NAME = "azurestorage";
-    public static final String CONNECTION_NAME = "connectionName";
+    public static final String CONNECTION_NAME = "name";
     public static final String ACCOUNT_NAME = "accountName";
     public static final String CLIENT_ID = "clientId";
     public static final String CLIENT_SECRET = "clientSecret";

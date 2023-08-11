@@ -51,18 +51,6 @@
                 {
                   "type": "attribute",
                   "value": {
-                    "name": "defaultEndpointsProtocol",
-                    "displayName": "Default Endpoints Protocol",
-                    "inputType": "comboOrExpression",
-                    "comboValues": ["http","https"],
-                    "defaultValue": "http",
-                    "required": "false",
-                    "helpTip": "The protocol (http or https) of the azure storage account."
-                  }
-                },
-                {
-                  "type": "attribute",
-                  "value": {
                     "name": "clientId",
                     "displayName": "Client ID",
                     "inputType": "stringOrExpression",
@@ -91,6 +79,17 @@
                     "defaultValue": "",
                     "required": "false",
                     "helpTip": "The Tenant ID of the application."
+                  }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "defaultEndpointsProtocol",
+                    "displayName": "Default Endpoints Protocol",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "false",
+                    "helpTip": "The protocol (http or https) of the azure storage account."
                   }
                 }
               ]

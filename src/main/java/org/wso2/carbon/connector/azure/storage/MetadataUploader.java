@@ -69,10 +69,9 @@ public class MetadataUploader extends AbstractConnector {
                 BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
                 if (blobClient.exists()) {
                     Gson gson = new Gson();
-                    Map map = gson.fromJson((String) metadata, Map.class);
-                    Map<String, String> metadataSrcMap = (Map<String, String>) map.get(AzureConstants.METADATA);
                     HashMap<String, String> metadataMap = new HashMap<>();
-                    for (Map.Entry<String, String> entry : metadataSrcMap.entrySet()) {
+                    Map<String, String> map = gson.fromJson((String) metadata, Map.class);
+                    for (Map.Entry<String, String> entry : map.entrySet()) {
                         if (StringUtils.isNotEmpty(entry.getValue())) {
                             metadataMap.put(entry.getKey(), entry.getValue());
                         }

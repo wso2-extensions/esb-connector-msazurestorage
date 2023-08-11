@@ -17,7 +17,7 @@
    under the License.
 -->
 <template name="init" onError="fault" xmlns="http://ws.apache.org/ns/synapse">
-	<parameter name="connectionName" description="Unique name to identify the connection"/>
+	<parameter name="name" description="Unique name to identify the connection"/>
 	<parameter name="accountName" description="The name of the azure storage account."/>
 	<parameter name="accountKey" description="The access key for the storage account."/>
 	<parameter name="defaultEndpointsProtocol" description="The protocol (http or https) of the azure storage account."/>
@@ -25,7 +25,7 @@
 	<parameter name="clientSecret" description="The client secret of the application."/>
 	<parameter name="tenantId" description="The tenant ID of the application."/>
 	<sequence>
-		<property name="connectionName" expression="$func:connectionName"/>
+		<property name="name" expression="$func:name"/>
 		<class name="org.wso2.carbon.connector.azure.storage.AzureConfig"/>
 	</sequence>
 </template>
