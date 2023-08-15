@@ -65,4 +65,15 @@ public class AzureUtil {
         messageContext.setProperty(AzureConstants.PROPERTY_ERROR_MESSAGE, error.getErrorMessage());
         messageContext.setProperty(AzureConstants.PROPERTY_ERROR_DETAIL, errorDetails);
     }
+
+    /**
+     * Get the error message
+     *
+     * @param statusCode The status code of the response
+     * @return The error message
+     */
+    public static String getErrorMessage(String operation, int statusCode) {
+
+        return operation + ": Received Status Code: " + statusCode + " from Azure Blob Storage.";
+    }
 }

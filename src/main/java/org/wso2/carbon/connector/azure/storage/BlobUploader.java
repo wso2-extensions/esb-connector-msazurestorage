@@ -38,6 +38,7 @@ import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.stream.XMLStreamException;
@@ -99,6 +100,9 @@ public class BlobUploader extends AbstractConnector {
             } else {
                 status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;
             }
+        } catch (UncheckedIOException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.FILE_IO_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
         } catch (InvalidConfigurationException e) {
             AzureUtil.setErrorPropertiesToMessage(messageContext, Error.INVALID_CONFIGURATION, e.getMessage());
             handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);

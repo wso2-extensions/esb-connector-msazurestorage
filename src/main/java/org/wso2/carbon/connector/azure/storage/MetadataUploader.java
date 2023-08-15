@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
+import com.azure.core.http.rest.Response;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
@@ -76,8 +77,13 @@ public class MetadataUploader extends AbstractConnector {
                             metadataMap.put(entry.getKey(), entry.getValue());
                         }
                     }
-                    blobClient.setMetadata(metadataMap);
-                    status = AzureConstants.STATUS_SUCCESS;
+                    Response<Void> metadataResponse = blobClient.setMetadataWithResponse(metadataMap, null, null, null);
+                    if (metadataResponse.getStatusCode() == 200) {
+                        status = AzureConstants.STATUS_SUCCESS;
+                    } else {
+                        status = AzureUtil.getErrorMessage(AzureConstants.METADATA_UPLOAD_FAILED,
+                                metadataResponse.getStatusCode());
+                    }
                 } else {
                     status = AzureConstants.ERR_BLOB_DOES_NOT_EXIST;
                 }

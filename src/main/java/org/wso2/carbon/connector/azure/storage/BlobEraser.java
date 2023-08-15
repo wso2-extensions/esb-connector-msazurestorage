@@ -64,10 +64,12 @@ public class BlobEraser extends AbstractConnector {
                 BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
                 Response<Boolean> response = blobClient.deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null,
                 null, null);
-                if (response.getStatusCode() == 404) {
+                if (response.getStatusCode() == 202) {
+                    status = AzureConstants.STATUS_SUCCESS;
+                } else if (response.getStatusCode() == 404) {
                     status = AzureConstants.ERR_BLOB_DOES_NOT_EXIST;
                 } else {
-                    status = AzureConstants.STATUS_SUCCESS;
+                    status = AzureUtil.getErrorMessage(AzureConstants.BLOB_DELETE_FAILED, response.getStatusCode());
                 }
             } else {
                 status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;

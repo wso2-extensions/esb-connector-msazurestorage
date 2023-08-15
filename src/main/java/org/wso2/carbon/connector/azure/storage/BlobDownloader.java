@@ -45,7 +45,6 @@ import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
 import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
-import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileAlreadyExistsException;
 import javax.xml.stream.XMLStreamException;
@@ -88,7 +87,9 @@ public class BlobDownloader extends AbstractConnector {
                         if (downloadToFileResponse.getStatusCode() == 206) {
                             generateResults(messageContext, true, AzureConstants.BLOB_DOWNLOAD_SUCCESSFUL);
                         } else {
-                            generateResults(messageContext, false, AzureConstants.BLOB_DOWNLOAD_FAILED);
+                            generateResults(messageContext, false,
+                                    AzureUtil.getErrorMessage(AzureConstants.BLOB_DOWNLOAD_FAILED,
+                                            downloadToFileResponse.getStatusCode()));
                         }
                     } else {
                         String contentType = blobClient.getProperties().getContentType();

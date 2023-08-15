@@ -65,6 +65,8 @@ public class AzureConstants {
     public static final String PROPERTY_ERROR_DETAIL = "ERROR_DETAIL";
     public static final String BLOB_DOWNLOAD_FAILED = "BLOB_DOWNLOAD_FAILED";
     public static final String BLOB_DOWNLOAD_SUCCESSFUL = "BLOB_DOWNLOAD_SUCCESSFUL";
+    public static final String METADATA_UPLOAD_FAILED = "METADATA_UPLOAD_FAILED";
+    public static final String BLOB_DELETE_FAILED = "BLOB_DELETE_FAILED";
     public static final String ERROR_LOG_PREFIX = "Azure Storage connector encountered an error: ";
     private AzureConstants() {
     }

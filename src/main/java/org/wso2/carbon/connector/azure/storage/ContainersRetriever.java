@@ -57,7 +57,6 @@ public class ContainersRetriever extends AbstractConnector {
                 containerElement.setText(blobContainerItem.getName());
                 result.addChild(containerElement);
             });
-            messageContext.getEnvelope().getBody().addChild(result);
         } catch (InvalidConfigurationException e) {
             AzureUtil.setErrorPropertiesToMessage(messageContext, Error.INVALID_CONFIGURATION, e.getMessage());
             handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
