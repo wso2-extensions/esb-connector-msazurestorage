@@ -1,0 +1,61 @@
+{
+  "connectorName": "msazurestorage",
+  "operationName": "listMetadata",
+  "title": "List Metadata",
+  "help": "<h1>List Metadata</h1> <b>This operation returns a list of metadata for a given blob.</b>",
+  "elements": [
+    {
+      "type": "attributeGroup",
+      "value": {
+        "groupName": "General",
+        "elements": [
+          {
+            "type": "attribute",
+            "value": {
+              "name": "configRef",
+              "displayName": "Connection",
+              "inputType": "connection",
+              "allowedConnectionTypes": [
+                "msazurestorage"
+              ],
+              "defaultType": "connection.msazurestorage",
+              "defaultValue": "",
+              "required": "true",
+              "helpTip": "Connection to be used"
+            }
+          },
+          {
+            "type": "attributeGroup",
+            "value": {
+              "groupName": "Basic",
+              "elements": [
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "containerName",
+                    "displayName": "Container name",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "true",
+                    "helpTip": "Container name"
+                  }
+                },
+                {
+                  "type": "attribute",
+                  "value": {
+                    "name": "fileName",
+                    "displayName": "Blob name",
+                    "inputType": "stringOrExpression",
+                    "defaultValue": "",
+                    "required": "true",
+                    "helpTip": "Blob name"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

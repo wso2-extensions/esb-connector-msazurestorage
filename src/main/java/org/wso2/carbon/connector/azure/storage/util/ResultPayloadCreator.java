@@ -22,6 +22,8 @@ import org.apache.axiom.om.util.AXIOMUtil;
 import org.apache.axiom.soap.SOAPBody;
 import org.apache.commons.lang.StringUtils;
 import org.apache.synapse.MessageContext;
+import org.apache.synapse.core.axis2.Axis2MessageContext;
+import org.apache.synapse.transport.passthru.PassThroughConstants;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.Iterator;
@@ -43,6 +45,8 @@ public class ResultPayloadCreator {
      */
     public static void preparePayload(MessageContext messageContext, OMElement element) {
         SOAPBody soapBody = messageContext.getEnvelope().getBody();
+        ((Axis2MessageContext) messageContext).getAxis2MessageContext().
+                removeProperty(PassThroughConstants.NO_ENTITY_BODY);
         for (Iterator itr = soapBody.getChildElements(); itr.hasNext(); ) {
             OMElement child = (OMElement) itr.next();
             child.detach();

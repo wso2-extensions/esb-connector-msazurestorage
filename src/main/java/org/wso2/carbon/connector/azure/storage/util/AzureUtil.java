@@ -17,28 +17,33 @@
  */
 package org.wso2.carbon.connector.azure.storage.util;
 
-import com.sun.crypto.provider.DESCipher;
 import org.apache.synapse.MessageContext;
-import org.wso2.carbon.connector.core.ConnectException;
+import org.wso2.carbon.connector.azure.storage.exceptions.InvalidConfigurationException;
 
 /**
  * This class contain required util methods for to Azure Storage connector.
  */
 public class AzureUtil {
-    public static String getStorageConnectionString(MessageContext messageContext) throws ConnectException {
-        Object accountName = messageContext.getProperty(AzureConstants.ACCOUNT_NAME);
-        Object accountKey = messageContext.getProperty(AzureConstants.ACCOUNT_KEY);
-        if (accountKey == null || accountName == null ){
-            throw new ConnectException("Missing authentication parameters.");
-        }
-        String protocol = AzureConstants.DEFAULT_PROTOCOL;
-        Object protocolObject = messageContext.getProperty(AzureConstants.PROTOCOL);
-        if (protocolObject != null) {
-            protocol = protocolObject.toString();
-        }
+    public static String getStorageConnectionString(String accountName, String accountKey, String protocol) {
         return AzureConstants.PROTOCOL_KEY_PARAM + protocol + AzureConstants.SEMICOLON +
                AzureConstants.ACCOUNT_NAME_PARAM + accountName + AzureConstants.SEMICOLON
                + AzureConstants.ACCOUNT_KEY_PARAM + accountKey;
+    }
+
+    /**
+     * Retrieves connection name from message context if configured as configKey attribute
+     * or from the template parameter
+     *
+     * @param messageContext Message Context from which the parameters should be extracted from
+     * @return connection name
+     */
+    public static String getConnectionName(MessageContext messageContext) throws InvalidConfigurationException {
+
+        String connectionName = (String) messageContext.getProperty(AzureConstants.CONNECTION_NAME);
+        if (connectionName == null) {
+            throw new InvalidConfigurationException("Mandatory parameter 'connectionName' is not set.");
+        }
+        return connectionName;
     }
 
     public static String generateResultPayload(boolean status, String description) {
@@ -46,5 +51,29 @@ public class AzureUtil {
             return AzureConstants.START_TAG + true + AzureConstants.END_TAG;
         }
         return AzureConstants.START_TAG_ERROR + description + AzureConstants.END_TAG_ERROR;
+    }
+
+    /**
+     * Sets the error code and error detail in message
+     *
+     * @param messageContext Message Context
+     * @param error          Error to be set
+     */
+    public static void setErrorPropertiesToMessage(MessageContext messageContext, Error error, String errorDetails) {
+
+        messageContext.setProperty(AzureConstants.PROPERTY_ERROR_CODE, error.getErrorCode());
+        messageContext.setProperty(AzureConstants.PROPERTY_ERROR_MESSAGE, error.getErrorMessage());
+        messageContext.setProperty(AzureConstants.PROPERTY_ERROR_DETAIL, errorDetails);
+    }
+
+    /**
+     * Get the error message
+     *
+     * @param statusCode The status code of the response
+     * @return The error message
+     */
+    public static String getErrorMessage(String operation, int statusCode) {
+
+        return operation + ": Received Status Code: " + statusCode + " from Azure Blob Storage.";
     }
 }

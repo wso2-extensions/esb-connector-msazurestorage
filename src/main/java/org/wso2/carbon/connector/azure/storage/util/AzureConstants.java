@@ -21,11 +21,17 @@ package org.wso2.carbon.connector.azure.storage.util;
  * This class contains the azure connector specific constants.
  */
 public class AzureConstants {
-    public static final String ACCOUNT_NAME = "azureAccountName";
-    public static final String ACCOUNT_KEY = "azureAccountKey";
+    public static final String CONNECTOR_NAME = "azurestorage";
+    public static final String CONNECTION_NAME = "name";
+    public static final String ACCOUNT_NAME = "accountName";
+    public static final String CLIENT_ID = "clientId";
+    public static final String CLIENT_SECRET = "clientSecret";
+    public static final String TENANT_ID = "tenantId";
+    public static final String ACCOUNT_KEY = "accountKey";
     public static final String PROTOCOL = "defaultEndpointsProtocol";
     public static final String DEFAULT_PROTOCOL = "http";
     public static final String CONTAINER_NAME = "containerName";
+    public static final String DESTINATION_FILE_PATH = "destinationFilePath";
     public static final String FILE_NAME = "fileName";
     public static final String FILE_PATH = "filePath";
     public static final String BLOB_CONTENT_TYPE = "blobContentType";
@@ -52,7 +58,16 @@ public class AzureConstants {
     public static final String ERR_UNKNOWN_ERROR_OCCURRED = "UNKNOWN_ERROR_OCCURRED";
     public static final String STATUS_SUCCESS = "SUCCESS";
     public static final String ERR_BLOB_DOES_NOT_EXIST = "BLOB_DOES_NOT_EXIST";
-
+    public static final String BLOB_ENDPOINT_SUFFIX = ".blob.core.windows.net";
+    public static final String HTTPS_PROTOCOL = "https://";
+    public static final String PROPERTY_ERROR_CODE = "ERROR_CODE";
+    public static final String PROPERTY_ERROR_MESSAGE = "ERROR_MESSAGE";
+    public static final String PROPERTY_ERROR_DETAIL = "ERROR_DETAIL";
+    public static final String BLOB_DOWNLOAD_FAILED = "BLOB_DOWNLOAD_FAILED";
+    public static final String BLOB_DOWNLOAD_SUCCESSFUL = "BLOB_DOWNLOAD_SUCCESSFUL";
+    public static final String METADATA_UPLOAD_FAILED = "METADATA_UPLOAD_FAILED";
+    public static final String BLOB_DELETE_FAILED = "BLOB_DELETE_FAILED";
+    public static final String ERROR_LOG_PREFIX = "Azure Storage connector encountered an error: ";
     private AzureConstants() {
     }
 }

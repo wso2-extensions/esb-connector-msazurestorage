@@ -17,27 +17,29 @@
  */
 package org.wso2.carbon.connector.azure.storage;
 
+import com.azure.core.http.rest.Response;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.models.BlobStorageException;
 import com.google.gson.Gson;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.aad.msal4j.MsalException;
 import org.apache.axiom.om.OMElement;
+import org.apache.commons.lang.StringUtils;
 import org.apache.synapse.MessageContext;
+import org.wso2.carbon.connector.azure.storage.connection.AzureStorageConnectionHandler;
+import org.wso2.carbon.connector.azure.storage.exceptions.InvalidConfigurationException;
 import org.wso2.carbon.connector.azure.storage.util.AzureConstants;
 import org.wso2.carbon.connector.azure.storage.util.AzureUtil;
+import org.wso2.carbon.connector.azure.storage.util.Error;
 import org.wso2.carbon.connector.azure.storage.util.ResultPayloadCreator;
 import org.wso2.carbon.connector.core.AbstractConnector;
 import org.wso2.carbon.connector.core.ConnectException;
+import org.wso2.carbon.connector.core.connection.ConnectionHandler;
 
-import javax.xml.stream.XMLStreamException;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * This class for performing upload metadata operation.
@@ -45,59 +47,64 @@ import java.util.Map;
 public class MetadataUploader extends AbstractConnector {
 
     public void connect(MessageContext messageContext) {
+
         Object containerName = messageContext.getProperty(AzureConstants.CONTAINER_NAME);
         Object fileName = messageContext.getProperty(AzureConstants.FILE_NAME);
         Object metadata = messageContext.getProperty(AzureConstants.METADATA);
 
         if (containerName == null || fileName == null || metadata == null) {
-            handleException("Mandatory parameters cannot be empty.", messageContext);
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.MISSING_PARAMETERS, "Mandatory " +
+                    "parameters [containerName], [fileName] and [metadata] cannot be empty.");
+            handleException("Mandatory parameters [containerName], [fileName] and [metadata] cannot be empty.",
+                    messageContext);
         }
-
+        ConnectionHandler handler = ConnectionHandler.getConnectionHandler();
         String status = AzureConstants.ERR_UNKNOWN_ERROR_OCCURRED;
-        FileInputStream fileInputStream = null;
         try {
-            String storageConnectionString = AzureUtil.getStorageConnectionString(messageContext);
-            CloudStorageAccount account = CloudStorageAccount.parse(storageConnectionString);
-            CloudBlobClient serviceClient = account.createCloudBlobClient();
-            CloudBlobContainer container = serviceClient.getContainerReference((String) containerName);
-            if (container.exists()) {
-                CloudBlockBlob blob = container.getBlockBlobReference((String) fileName);
-                if (blob.exists()) {
+            String connectionName = AzureUtil.getConnectionName(messageContext);
+            AzureStorageConnectionHandler azureStorageConnectionHandler = (AzureStorageConnectionHandler)
+                    handler.getConnection(AzureConstants.CONNECTOR_NAME, connectionName);
+            BlobServiceClient blobServiceClient = azureStorageConnectionHandler.getBlobServiceClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName.toString());
+            if (containerClient.exists()) {
+                BlobClient blobClient = containerClient.getBlobClient(fileName.toString());
+                if (blobClient.exists()) {
                     Gson gson = new Gson();
-                    Map map = gson.fromJson((String) metadata, Map.class);
-                    Map<String, String> metadataSrcMap = (Map<String, String>) map.get(AzureConstants.METADATA);
                     HashMap<String, String> metadataMap = new HashMap<>();
-                    for (Map.Entry<String, String> entry : metadataSrcMap.entrySet()) {
-                        if (entry.getValue() != null && !"".equals(entry.getValue())) {
+                    Map<String, String> map = gson.fromJson((String) metadata, Map.class);
+                    for (Map.Entry<String, String> entry : map.entrySet()) {
+                        if (StringUtils.isNotEmpty(entry.getValue())) {
                             metadataMap.put(entry.getKey(), entry.getValue());
                         }
                     }
-                    blob.setMetadata(metadataMap);
-                    blob.uploadMetadata();
-                    status = AzureConstants.STATUS_SUCCESS;
+                    Response<Void> metadataResponse = blobClient.setMetadataWithResponse(metadataMap, null, null, null);
+                    if (metadataResponse.getStatusCode() == 200) {
+                        status = AzureConstants.STATUS_SUCCESS;
+                    } else {
+                        status = AzureUtil.getErrorMessage(AzureConstants.METADATA_UPLOAD_FAILED,
+                                metadataResponse.getStatusCode());
+                    }
                 } else {
                     status = AzureConstants.ERR_BLOB_DOES_NOT_EXIST;
                 }
             } else {
                 status = AzureConstants.ERR_CONTAINER_DOES_NOT_EXIST;
             }
-        } catch (URISyntaxException e) {
-            handleException("Invalid input URL found.", e, messageContext);
-        } catch (InvalidKeyException e) {
-            handleException("Invalid account key found.", e, messageContext);
-        } catch (StorageException e) {
-            handleException("Error occurred while connecting to the storage.", e, messageContext);
+        } catch (InvalidConfigurationException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.INVALID_CONFIGURATION, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
         } catch (ConnectException e) {
-            handleException("Unexpected error occurred. ", e, messageContext);
-        }
-        finally {
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (IOException e) {
-                    log.error("Error occurred while closing the file input stream.");
-                }
-            }
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.CONNECTION_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (MsalException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.AUTHENTICATION_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (BlobStorageException e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.BLOB_STORAGE_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
+        } catch (Exception e) {
+            AzureUtil.setErrorPropertiesToMessage(messageContext, Error.GENERAL_ERROR, e.getMessage());
+            handleException(AzureConstants.ERROR_LOG_PREFIX + e.getMessage(), messageContext);
         }
         generateResults(messageContext, status);
     }
