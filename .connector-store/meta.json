@@ -6,8 +6,17 @@
     "description": "The Microsoft Azure Storage Connector allows you to access the Azure Storage services using Microsoft Azure Storage Java SDK through WSO2 Micro Integrator (WSO2 MI). Microsoft Azure Storage is a Microsoft-managed cloud service that provides storage that is highly available and secure.",
     "status": "Active",
     "labels": [
-        "Application",
-        "Storage"
+        "storage",
+        "azure"
     ],
-    "releases": []
+    "releases": [
+        {
+            "tagName": "v2.0.0",
+            "products": [
+                "MI 4.1.0",
+                "MI 4.0.0"
+            ],
+            "isHidden": false
+        }
+    ]
 }
