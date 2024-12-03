@@ -8,7 +8,7 @@
     "mavenArtifactId": "org.wso2.carbon.connector.msazurestorage",
     "description": "The Microsoft Azure Storage Connector allows you to access the Azure Storage services using Microsoft Azure Storage Java SDK through WSO2 Micro Integrator (WSO2 MI). Microsoft Azure Storage is a Microsoft-managed cloud service that provides storage that is highly available and secure.",
     "status": "Active",
-    "connectorRank": 7,
+    "rank": 7,
     "type": "Connector",
     "labels": [
         "storage",
