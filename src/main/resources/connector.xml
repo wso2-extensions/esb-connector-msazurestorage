@@ -24,5 +24,6 @@
         <dependency component="metadata" />
         <description>WSO2 Microsoft Azure Storage connector library</description>
     </component>
+    <displayName>Microsoft Azure Storage</displayName>
     <icon>icon/icon-small.gif</icon>
 </connector>
