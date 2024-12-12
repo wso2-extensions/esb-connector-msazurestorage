@@ -16,6 +16,72 @@
     ],
     "releases": [
         {
+            "tagName": "v2.0.1",
+            "products": [
+                "MI 4.1.0",
+                "MI 4.0.0"
+            ],
+            "operations": [
+                {
+                    "name":"init",
+                    "description":"Init operation for ms azure storage connector.",
+                    "isHidden":true
+                },
+                {
+                    "name":"listBlobs",
+                    "description":"Gets the list of all blobs.",
+                    "isHidden":false
+                },
+                {
+                    "name":"uploadBlob",
+                    "description":"Uploads the blob into the Azure storage.",
+                    "isHidden":false
+                },
+                {
+                    "name":"deleteBlob",
+                    "description":"Deletes the blob from the Azure storage.",
+                    "isHidden":false
+                },
+                {
+                    "name":"downloadBlob",
+                    "description":"Downloads the blob from the Azure storage.",
+                    "isHidden":false
+                },
+                {
+                    "name":"listContainers",
+                    "description":"Gets the list of all containers.",
+                    "isHidden":false
+                },
+                {
+                    "name":"createContainer",
+                    "description":"Creates a container into the Azure storage.",
+                    "isHidden":false
+                },
+                {
+                    "name":"deleteContainer",
+                    "description":"Deletes the container from the Azure storage.",
+                    "isHidden":false
+                },
+                {
+                    "name":"listMetadata",
+                    "description":"Downloads the metadata from the blob from Azure storage.",
+                    "isHidden":false
+                },
+                {
+                    "name":"uploadMetadata",
+                    "description":"Uploads metadata to a blob in Azure storage.",
+                    "isHidden":false
+                }
+            ],
+            "connections": [
+                {
+                    "name": "msazurestorage",
+                    "description": "Connection for accessing Microsoft Azure Storage."
+                }
+            ],
+            "isHidden": false
+        },
+        {
             "tagName": "v2.0.0",
             "products": [
                 "MI 4.1.0",
