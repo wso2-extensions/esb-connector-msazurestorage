@@ -2,12 +2,19 @@
     "name": "Microsoft Azure Storage",
     "owner": "WSO2",
     "category": "Storage and Content Management",
-    "documentationUrl": "https://apim.docs.wso2.com/en/latest/reference/connectors/microsoft-azure-storage-connector/microsoft-azure-overview/",
-    "description": "The Microsoft Azure Storage Connector allows you to access the Azure Storage services using Microsoft Azure Storage Java SDK through WSO2 Micro Integrator (WSO2 MI). Microsoft Azure Storage is a Microsoft-managed cloud service that provides storage that is highly available and secure.",
+    "documentationUrl": "https://ei.docs.wso2.com/en/latest/micro-integrator/references/connectors/microsoft-azure-storage-connector/microsoft-azure-overview/",
+    "description": "The Microsoft Azure Storage Connector allows you to access the Azure Storage services using Microsoft Azure Storage Java SDK through WSO2 Enterprise Integrator (WSO2 EI). Microsoft Azure Storage is a Microsoft-managed cloud service that provides storage that is highly available and secure. Azure Storage consists of three data services: Blob storage, File storage, and Queue storage.",
     "status": "Active",
     "labels": [
-        "Application",
-        "Storage"
+        "Storage",
+        "Application"
     ],
-    "releases": []
+    "releases": [
+        {
+            "tagName": "1.0.0",
+            "products": [
+                "EI 6.1.1"
+            ]
+        }
+    ]
 }
