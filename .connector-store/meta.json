@@ -16,7 +16,7 @@
     ],
     "releases": [
         {
-            "tagName": "v2.0.1",
+            "tagName": "v2.0.2",
             "products": [
                 "MI 4.4.0",
                 "MI 4.3.0",
@@ -28,63 +28,272 @@
             ],
             "operations": [
                 {
-                    "name": "init",
-                    "description": "Init operation for ms azure storage connector.",
-                    "isHidden": true
-                },
-                {
-                    "name": "listBlobs",
-                    "description": "Gets the list of all blobs.",
+                    "name": "downloadBlob",
+                    "description": "Download Blob",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the container."
+                        },
+                        {
+                            "name": "fileName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the Blob to be downloaded."
+                        },
+                        {
+                            "name": "destinationFilePath",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "Local file path to download the blob."
+                        }
+                    ],
                     "isHidden": false
                 },
                 {
                     "name": "uploadBlob",
-                    "description": "Uploads the blob into the Azure storage.",
-                    "isHidden": false
-                },
-                {
-                    "name": "deleteBlob",
-                    "description": "Deletes the blob from the Azure storage.",
-                    "isHidden": false
-                },
-                {
-                    "name": "downloadBlob",
-                    "description": "Downloads the blob from the Azure storage.",
-                    "isHidden": false
-                },
-                {
-                    "name": "listContainers",
-                    "description": "Gets the list of all containers.",
+                    "description": "Upload Blob",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the container."
+                        },
+                        {
+                            "name": "fileName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the Blob to be created."
+                        },
+                        {
+                            "name": "blobContentType",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "Content Type of the Blob."
+                        },
+                        {
+                            "name": "filePath",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "The path of the file to be uploaded."
+                        },
+                        {
+                            "name": "textContent",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "Text content to be uploaded (without using a file)."
+                        },
+                        {
+                            "name": "metadata",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "Key value list of metadata."
+                        }
+                    ],
                     "isHidden": false
                 },
                 {
                     "name": "createContainer",
-                    "description": "Creates a container into the Azure storage.",
+                    "description": "Create Container",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the container to be created."
+                        }
+                    ],
                     "isHidden": false
                 },
                 {
-                    "name": "deleteContainer",
-                    "description": "Deletes the container from the Azure storage.",
+                    "name": "listContainers",
+                    "description": "List Container",
+                    "params": [],
                     "isHidden": false
                 },
                 {
-                    "name": "listMetadata",
-                    "description": "Downloads the metadata from the blob from Azure storage.",
+                    "name": "listBlobs",
+                    "description": "List Blobs",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the container."
+                        }
+                    ],
                     "isHidden": false
                 },
                 {
                     "name": "uploadMetadata",
-                    "description": "Uploads metadata to a blob in Azure storage.",
+                    "description": "List Metadata",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Container name"
+                        },
+                        {
+                            "name": "fileName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Blob name"
+                        },
+                        {
+                            "name": "metadata",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Key value list of metadata"
+                        }
+                    ],
+                    "isHidden": false
+                },
+                {
+                    "name": "listMetadata",
+                    "description": "List Metadata",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Container name"
+                        },
+                        {
+                            "name": "fileName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Blob name"
+                        }
+                    ],
+                    "isHidden": false
+                },
+                {
+                    "name": "deleteContainer",
+                    "description": "Delete Container",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the container to be deleted."
+                        }
+                    ],
+                    "isHidden": false
+                },
+                {
+                    "name": "deleteBlob",
+                    "description": "Delete Blob",
+                    "params": [
+                        {
+                            "name": "containerName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the container."
+                        },
+                        {
+                            "name": "fileName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "Name of the Blob to be deleted."
+                        }
+                    ],
                     "isHidden": false
                 }
             ],
             "connections": [
                 {
                     "name": "msazurestorage",
-                    "description": "Connection for accessing Microsoft Azure Storage."
+                    "description": "Microsoft Azure Storage Connector",
+                    "params": [
+                        {
+                            "name": "connectionName",
+                            "type": "string",
+                            "required": true,
+                            "defaultValue": "AZURE_CONNECTION",
+                            "description": "The name for the Microsoft Azure Storage connection"
+                        },
+                        {
+                            "name": "accountName",
+                            "type": "stringOrExpression",
+                            "required": true,
+                            "defaultValue": "",
+                            "description": "The name of the azure storage account."
+                        },
+                        {
+                            "name": "accountKey",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "The access key for the storage account."
+                        },
+                        {
+                            "name": "clientId",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "The client ID of the application."
+                        },
+                        {
+                            "name": "clientSecret",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "The client Secret of the application."
+                        },
+                        {
+                            "name": "tenantId",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "The Tenant ID of the application."
+                        },
+                        {
+                            "name": "defaultEndpointsProtocol",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "The protocol (http or https) of the azure storage account."
+                        },
+                        {
+                            "name": "maxIdleTime",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "Maximum time (in milliseconds) a pooled connection can remain idle before it is closed."
+                        },
+                        {
+                            "name": "maxLifeTime",
+                            "type": "stringOrExpression",
+                            "required": false,
+                            "defaultValue": "",
+                            "description": "Maximum time (in milliseconds) a pooled connection can remain open before it is closed."
+                        }
+                    ]
                 }
-            ],
-            "isHidden": false
+            ]
         },
         {
             "tagName": "v2.0.0",
